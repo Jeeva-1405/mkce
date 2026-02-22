@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Timetable - FacultySync</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/db.js"></script>
+    <script src="js/common.js"></script>
+    <style>
+        .tt-header {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 0.75rem 0.5rem;
+            background: #f1f5f9;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+        }
+
+        .tt-break {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+        }
+
+        .period-cell {
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.25rem;
+            text-align: center;
+            font-size: 0.8125rem;
+            cursor: pointer;
+            border: 1px dashed var(--border-medium);
+            background: white;
+            border-radius: var(--radius-sm);
+            transition: all 0.15s;
+        }
+
+        .period-cell:hover {
+            border-color: var(--primary-accent);
+            background: var(--primary-light);
+            border-style: solid;
+        }
+
+        /* Crisp SVG Success Animation */
+        .success-animation {
+            margin: 20px auto;
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 4;
+            stroke: #4CAF50;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px #4CAF50;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+            position: relative;
+            top: 5px;
+            right: 5px;
+            margin: 0 auto;
+        }
+
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 4;
+            stroke-miterlimit: 10;
+            stroke: #4CAF50;
+            fill: #fff;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            stroke: #fff;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes scale {
+
+            0%,
+            100% {
+                transform: none;
+            }
+
+            50% {
+                transform: scale3d(1.1, 1.1, 1);
+            }
+        }
+
+        @keyframes fill {
+            100% {
+                box-shadow: inset 0px 0px 0px 40px #4CAF50;
+            }
+        }
+
+        .success-checkmark .check-icon .icon-fix {
+            top: 8px;
+            width: 5px;
+            left: 28px;
+            z-index: 10;
+            height: 85px;
+            position: absolute;
+            transform: rotate(-45deg);
+            background-color: #FFFFFF;
+        }
+
+        @keyframes rotate-circle {
+            0% {
+                transform: rotate(-45deg);
+            }
+
+            5% {
+                transform: rotate(-45deg);
+            }
+
+            12% {
+                transform: rotate(-405deg);
+            }
+
+            100% {
+                transform: rotate(-405deg);
+            }
+        }
+
+        @keyframes icon-line-tip {
+            0% {
+                width: 0;
+                left: 1px;
+                top: 19px;
+            }
+
+            54% {
+                width: 0;
+                left: 1px;
+                top: 19px;
+            }
+
+            70% {
+                width: 50px;
+                left: -8px;
+                top: 37px;
+            }
+
+            84% {
+                width: 17px;
+                left: 21px;
+                top: 48px;
+            }
+
+            100% {
+                width: 25px;
+                left: 14px;
+                top: 46px;
+            }
+        }
+
+        @keyframes icon-line-long {
+            0% {
+                width: 0;
+                right: 46px;
+                top: 54px;
+            }
+
+            65% {
+                width: 0;
+                right: 46px;
+                top: 54px;
+            }
+
+            84% {
+                width: 55px;
+                right: 0px;
+                top: 35px;
+            }
+
+            100% {
+                width: 47px;
+                right: 8px;
+                top: 38px;
+            }
+        }
+
+        .period-cell.active {
+            background: white;
+            border: 1px solid var(--primary-accent);
+            box-shadow: inset 0 0 0 1px var(--primary-accent);
+        }
+
+        .cell-subject {
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.125rem;
+        }
+
+        .cell-room {
+            font-size: 0.7rem;
+            color: var(--primary-accent);
+            background: var(--primary-light);
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-weight: 600;
+        }
+
+        .cell-section {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 80px repeat(10, 1fr);
+            gap: 0.5rem;
+            min-width: 1000px;
+        }
+
+        .day-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.8125rem;
+            color: var(--text-main);
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a href="dashboard.html" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="leave-history.html" class="nav-link"><i class="fas fa-history"></i> Leave History</a>
+            <a href="directory.html" class="nav-link"><i class="fas fa-address-book"></i> Profiles</a>
+        </div>
+        <div class="navbar-center"
+            style="display: flex; align-items: center; gap: 0.5rem; max-width: 480px; flex: 1; justify-content: center;">
+            <div style="flex: 1; max-width: 400px; position: relative;">
+                <input type="text" class="command-search" placeholder="Search classes, faculty, or actions (Ctrl + K)">
+            </div>
+            <button class="btn btn-secondary" style="height: 36px; padding: 0 0.75rem; border-radius: var(--radius-sm);"
+                onclick="location.href='directory.html?openFilters=true'">
+                <i class="fas fa-filter"></i>
+            </button>
+        </div>
+        <div class="navbar-right">
+            <div
+                style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; background: var(--bg-main); padding: 0.25rem 0.625rem; border-radius: 50px; border: 1px solid var(--border-medium);">
+                2025-2026
+            </div>
+            <a href="notifications.html"
+                style="color: var(--text-muted); position: relative; font-size: 1.125rem; margin: 0 0.5rem; text-decoration: none;">
+                <i class="far fa-bell"></i>
+                <span class="notif-badge"
+                    style="position: absolute; top: -4px; right: -4px; background: var(--danger); color: white; font-size: 0.55rem; padding: 1px 3px; border-radius: 10px; min-width: 14px; text-align: center; display: none; border: 2px solid white;">0</span>
+            </a>
+            <div class="profile-dropdown-container">
+                <div class="profile-pill" id="profilePill">
+                    <div class="profile-info">
+                        <span class="profile-name" id="user-nav-name">...</span>
+                        <span class="profile-role" id="user-nav-role">Faculty</span>
+                    </div>
+                    <div class="profile-avatar" id="user-nav-avatar">?</div>
+                </div>
+                <div class="profile-dropdown-menu" id="profileMenu">
+                    <a href="details.html"><i class="fas fa-user-circle"></i> Weekly Timetable</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-top: 8rem;">
+        <div style="margin-bottom: 3rem;">
+            <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">Weekly
+                Timetable</h1>
+            <p style="color: var(--text-muted);">Manage your weekly schedule and class timings.</p>
+        </div>
+
+        <form id="profileForm">
+            <section class="card" style="margin-bottom: 2rem;">
+                <h3
+                    style="font-size: 1.125rem; font-weight: 600; color: #1e293b; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+                    Personal Details
+                </h3>
+                <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+                    <!-- Photo Display Section -->
+                    <div style="flex: 0 0 160px; text-align: center;">
+                        <div id="photo-preview"
+                            style="width: 160px; height: 160px; border-radius: var(--radius-lg); border: 2px solid var(--border-light); display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--bg-main); position: relative; margin-bottom: 1rem;">
+                            <i class="fas fa-user-tie" style="font-size: 3.5rem; color: var(--text-muted);"></i>
+                        </div>
+                        <input type="file" id="photo-input" hidden accept="image/*" onchange="previewPhoto(this)">
+                        <div id="admin-photo-label"
+                            style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">
+                            <i class="fas fa-lock" style="font-size: 0.65rem;"></i> Profile Photo
+                        </div>
+                        <button type="button" id="admin-photo-btn" class="btn btn-secondary w-full"
+                            style="padding: 0.5rem; font-size: 0.8125rem; height: auto; display: none;"
+                            onclick="document.getElementById('photo-input').click()">
+                            <i class="fas fa-camera"></i> Update Photo
+                        </button>
+                    </div>
+
+                    <!-- Details Form -->
+                    <div
+                        style="flex: 1; min-width: 300px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-user"
+                                    style="position: absolute; left: 0.875rem; top: 1rem; font-size: 0.875rem; color: var(--text-muted);"></i>
+                                <input type="text" id="full-name" class="form-input"
+                                    style="padding-left: 2.5rem; background: #f8fafc; cursor: not-allowed;" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Designation</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-id-badge"
+                                    style="position: absolute; left: 0.875rem; top: 1rem; font-size: 0.875rem; color: var(--text-muted);"></i>
+                                <input type="text" id="designation" class="form-input"
+                                    style="padding-left: 2.5rem; background: #f8fafc; cursor: not-allowed;" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-envelope"
+                                    style="position: absolute; left: 0.875rem; top: 1rem; font-size: 0.875rem; color: var(--text-muted);"></i>
+                                <input type="email" id="email" class="form-input"
+                                    style="padding-left: 2.5rem; background: #f8fafc; cursor: not-allowed;" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-phone"
+                                    style="position: absolute; left: 0.875rem; top: 1rem; font-size: 0.875rem; color: var(--text-muted);"></i>
+                                <input type="tel" id="phoneNumber" class="form-input"
+                                    style="padding-left: 2.5rem; background: #f8fafc; cursor: not-allowed;" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Department</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-building"
+                                    style="position: absolute; left: 0.875rem; top: 1rem; font-size: 0.875rem; color: var(--text-muted);"></i>
+                                <input type="text" id="department" class="form-input"
+                                    style="padding-left: 2.5rem; background: #f8fafc; cursor: not-allowed;" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Account Password</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-lock"
+                                    style="position: absolute; left: 0.875rem; top: 1rem; font-size: 0.875rem; color: var(--text-muted);"></i>
+                                <input type="text" id="account-password" class="form-input"
+                                    style="padding-left: 2.5rem; background: #f8fafc; cursor: not-allowed;" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h3
+                    style="font-size: 1.125rem; font-weight: 600; color: #1e293b; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-light); padding-bottom: 1rem;">
+                    Weekly Timetable
+                </h3>
+                <div style="overflow-x: auto; padding-bottom: 1rem;">
+                    <div class="grid-container">
+                        <div class="day-label" style="color: var(--primary-600);">Day</div>
+                        <div class="tt-header">I<br>8:45-9:45</div>
+                        <div class="tt-header">II<br>9:45-10:45</div>
+                        <div class="tt-header">Break</div>
+                        <div class="tt-header">III<br>11:05-12:05</div>
+                        <div class="tt-header">IV<br>12:05-12:55</div>
+                        <div class="tt-header">Lunch</div>
+                        <div class="tt-header">V<br>1:45-2:45</div>
+                        <div class="tt-header">Break</div>
+                        <div class="tt-header">VI<br>3:00-3:50</div>
+                        <div class="tt-header">VII<br>3:50-4:40</div>
+                    </div>
+                    <div id="timetable-body" class="grid-container" style="margin-top: 0.5rem;"></div>
+                </div>
+                <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+                    <button type="button" class="btn btn-primary" onclick="saveEverything()"
+                        style="padding: 0.75rem 2rem;">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </section>
+        </form>
+    </main>
+
+    <div class="modal-overlay" id="classModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 1.5rem;">Edit Period Details</h3>
+            <p id="modalPeriodInfo" style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;"></p>
+            <form id="classForm" onsubmit="event.preventDefault(); saveClassDetails();">
+                <input type="hidden" id="selectedCellId">
+                <div class="form-group">
+                    <label class="form-label">Type</label>
+                    <select id="classType" class="form-input" onchange="toggleInputs(this.value)">
+                        <option value="Free">Free Period</option>
+                        <option value="Class">Class / Lab</option>
+                    </select>
+                </div>
+                <div id="detailsInputs" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Subject / Class Name</label>
+                        <select id="subject" class="form-input"></select>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <div class="form-group">
+                                <label class="form-label">Year</label>
+                                <select id="year" class="form-input" onchange="updateSubjectOptions(this.value)">
+                                    <option value="1">1st Year</option>
+                                    <option value="2">2nd Year</option>
+                                    <option value="3">3rd Year</option>
+                                    <option value="4">4th Year</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Section</label>
+                                <select id="section" class="form-input">
+                                    <option value="ECE-A">ECE-A</option>
+                                    <option value="ECE-B">ECE-B</option>
+                                    <option value="ECE-C">ECE-C</option>
+                                    <option value="ECE-D">ECE-D</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary w-full" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary w-full">Save Details</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="successModal" style="z-index: 5000;">
+        <div class="modal-content" style="max-width: 350px; text-align: center; padding: 3rem 2rem;">
+            <div class="success-animation">
+                <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
+                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+                </svg>
+            </div>
+            <h3 style="margin-top: 2rem; color: var(--text-main);">Timetable Updated!</h3>
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.5rem;">Your changes have been
+                saved successfully.</p>
+        </div>
+    </div>
+
+    <script>
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+        const times = ['8:45-9:45', '9:45-10:45', '10:45-11:05', '11:05-12:05', '12:05-12:55', '12:55-1:45', '1:45-2:45', '2:45-3:00', '3:00-3:50', '3:50-4:40'];
+        const structure = [1, 1, 0, 1, 1, 0, 1, 0, 1, 1];
+        let timetableData = {};
+
+        let targetUserId = null;
+        let uploadedPhotoBase64 = null;
+
+        function init() {
+            const currentUser = db.getCurrentUser();
+            if (!currentUser) { window.location.href = 'index.html'; return; }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryId = urlParams.get('id');
+
+            // If admin is viewing someone else or themselves via ID
+            const isAdmin = currentUser.role === 'admin';
+            targetUserId = (isAdmin && queryId) ? queryId : currentUser.id;
+
+            const saved = db.getProfile(targetUserId);
+            if (!saved) return;
+
+            // Handle Read-Only vs Editable mode
+            const isEditable = isAdmin || (targetUserId === currentUser.id && false); // Users can't edit themselves anymore as per previous request, unless we change mind. 
+            // Wait, previous request was "it should not be editable by the faculty". 
+            // So if I'm an admin, it's editable. If I'm faculty, it's NOT.
+
+            const inputs = ['full-name', 'designation', 'email', 'phoneNumber', 'department', 'account-password'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (isAdmin) {
+                    el.readOnly = false;
+                    el.style.background = 'white';
+                    el.style.cursor = 'text';
+                } else {
+                    el.readOnly = true;
+                    el.style.background = '#f8fafc';
+                    el.style.cursor = 'not-allowed';
+                }
+            });
+
+            if (isAdmin) {
+                document.getElementById('admin-photo-btn').style.display = 'block';
+                document.getElementById('admin-photo-label').style.display = 'none';
+            }
+
+            // Profile section updates
+            document.getElementById('full-name').value = saved.name || '';
+            document.getElementById('designation').value = saved.desig || '';
+            document.getElementById('email').value = saved.id || '';
+            document.getElementById('phoneNumber').value = saved.phone || '';
+            document.getElementById('department').value = saved.dept || '';
+            document.getElementById('account-password').value = saved.password || '';
+
+            // Profile photo update
+            if (saved.photo) {
+                uploadedPhotoBase64 = saved.photo;
+                document.getElementById('photo-preview').innerHTML = `<img src="${saved.photo}" style="width: 100%; height: 100%; object-fit: cover;">`;
+            }
+
+            timetableData = saved.timetable || {};
+
+            const container = document.getElementById('timetable-body');
+            days.forEach((day, dIdx) => {
+                const dayLabel = document.createElement('div');
+                dayLabel.className = 'day-label';
+                dayLabel.innerText = day;
+                container.appendChild(dayLabel);
+
+                let p = 1;
+                structure.forEach((type, sIdx) => {
+                    const cell = document.createElement('div');
+                    cell.style.animationDelay = `${(dIdx * 0.05) + (sIdx * 0.02)}s`;
+                    if (type === 0) {
+                        cell.className = 'tt-break reveal';
+                        cell.innerText = sIdx === 2 ? 'BREAK' : sIdx === 5 ? 'LUNCH' : 'BREAK';
+                    } else {
+                        cell.className = 'period-cell reveal';
+                        const cId = `cell-${dIdx}-${p}`;
+                        cell.id = cId;
+                        if (timetableData[cId]) renderCell(cell, timetableData[cId]);
+                        else cell.innerHTML = '<span style="color: #cbd5e1; font-size: 0.75rem;">Empty</span>';
+                        cell.onclick = () => openModal(cId, day, p, times[sIdx]);
+                        p++;
+                    }
+                    container.appendChild(cell);
+                });
+            });
+        }
+
+        function renderCell(cell, data) {
+            cell.classList.add('active');
+            cell.innerHTML = `
+                <div class="cell-subject">${data.subject}</div>
+                <div class="cell-section">${data.section}</div>
+                <div class="cell-room">Year ${data.year}</div>
+            `;
+        }
+
+        const modal = document.getElementById('classModal');
+        let currentCellId = null;
+        function openModal(cId, day, p, time) {
+            currentCellId = cId;
+            document.getElementById('modalPeriodInfo').innerText = `${day} | Period ${p} (${time})`;
+            const data = timetableData[cId];
+            if (data) {
+                document.getElementById('classType').value = 'Class'; toggleInputs('Class');
+                document.getElementById('year').value = data.year || '1';
+                updateSubjectOptions(data.year || '1', data.subject);
+                document.getElementById('section').value = data.section || 'ECE-A';
+            } else {
+                document.getElementById('classType').value = 'Free'; toggleInputs('Free');
+                updateSubjectOptions('1');
+            }
+            modal.classList.add('active');
+        }
+        function closeModal() { modal.classList.remove('active'); }
+        function toggleInputs(v) { document.getElementById('detailsInputs').style.display = v === 'Class' ? 'block' : 'none'; }
+
+        const SUBJECTS_BY_YEAR = {
+            '1': ["Mathematics I", "Engineering Physics", "Engineering Chemistry", "Basic Electrical Engineering"],
+            '2': ["Data Structures", "Digital Logic Design", "Electronic Circuits", "Network Analysis"],
+            '3': ["Microprocessors & Microcontrollers", "Control Systems", "Digital Signal Processing", "Communication Systems"],
+            '4': ["VLSI Design", "Wireless Communication", "Embedded Systems", "Machine Learning"]
+        };
+
+        function updateSubjectOptions(year, selectedSubject = null) {
+            const subjectSelect = document.getElementById('subject');
+            const subjects = SUBJECTS_BY_YEAR[year] || [];
+            subjectSelect.innerHTML = subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+            if (selectedSubject && subjects.includes(selectedSubject)) {
+                subjectSelect.value = selectedSubject;
+            }
+        }
+
+        function saveClassDetails() {
+            const cell = document.getElementById(currentCellId);
+            if (document.getElementById('classType').value === 'Free') {
+                delete timetableData[currentCellId];
+                cell.classList.remove('active');
+                cell.innerHTML = '<span style="color: #cbd5e1; font-size: 0.75rem;">Empty</span>';
+            } else {
+                const p = parseInt(currentCellId.split('-')[2]);
+                const mapping = { 1: 0, 2: 1, 3: 3, 4: 4, 5: 6, 6: 8, 7: 9 };
+                const data = {
+                    subject: document.getElementById('subject').value || 'Class',
+                    section: document.getElementById('section').value,
+                    year: document.getElementById('year').value,
+                    time: times[mapping[p]]
+                };
+                timetableData[currentCellId] = data;
+                renderCell(cell, data);
+            }
+            closeModal();
+        }
+
+        function previewPhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    uploadedPhotoBase64 = e.target.result;
+                    document.getElementById('photo-preview').innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function saveEverything() {
+            const currentUser = db.getCurrentUser();
+            const p = {
+                ...db.getProfile(targetUserId), // Preserve other fields like password
+                name: document.getElementById('full-name').value,
+                desig: document.getElementById('designation').value,
+                id: document.getElementById('email').value, // Use email as ID
+                phone: document.getElementById('phoneNumber').value,
+                dept: document.getElementById('department').value,
+                password: document.getElementById('account-password').value,
+                photo: uploadedPhotoBase64,
+                timetable: timetableData
+            };
+            db.saveProfile(targetUserId, p);
+
+            // If ID changed and it was the current user, re-login
+            if (targetUserId === currentUser.id && currentUser.id !== p.id) {
+                db.login(p.id);
+            }
+            // If ID changed, we might need to update current user ID in localStorage
+            if (currentUser.id !== p.id) {
+                db.login(p.id);
+            }
+
+            // Show Success Animation
+            const successModal = document.getElementById('successModal');
+            successModal.classList.add('active');
+
+            setTimeout(() => {
+                successModal.classList.remove('active');
+                window.location.href = 'dashboard.html';
+            }, 2500);
+        }
+        init();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - FacultySync</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/db.js"></script>
+    <script src="js/common.js"></script>
+    <style>
+        .notif-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-medium);
+        }
+
+        .filter-tab {
+            padding: 0.75rem 0;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .filter-tab:hover,
+        .filter-tab.active {
+            color: var(--primary-accent);
+        }
+
+        .filter-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary-accent);
+        }
+
+        .notif-item {
+            display: flex;
+            gap: 1.25rem;
+            padding: 1.25rem;
+            background: white;
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+            transition: all 0.1s;
+            position: relative;
+        }
+
+        .notif-item:hover {
+            border-color: var(--primary-200);
+            background: var(--bg-main);
+        }
+
+        .notif-item.unread {
+            background: #fdfefe;
+            border-left: 3px solid var(--primary-accent);
+        }
+
+        .notif-icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1rem;
+            background: var(--primary-light);
+            color: var(--primary-accent);
+        }
+
+        .notif-body {
+            flex: 1;
+        }
+
+        .notif-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.25rem;
+        }
+
+        .notif-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-main);
+        }
+
+        .notif-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .notif-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .notif-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.1s;
+        }
+
+        .btn-accept {
+            background: var(--primary-accent);
+            color: white;
+        }
+
+        .btn-accept:hover {
+            background: var(--primary-main);
+        }
+
+        .btn-reject {
+            background: white;
+            border-color: var(--border-medium);
+            color: var(--text-main);
+        }
+
+        .btn-reject:hover {
+            background: #f9fafb;
+        }
+
+        .unread-indicator {
+            width: 8px;
+            height: 8px;
+            background: var(--primary-600);
+            border-radius: 50%;
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 5rem 2rem;
+            color: var(--text-muted);
+            border: 1px dashed var(--border-medium);
+            border-radius: var(--radius-lg);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a href="dashboard.html" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="leave-history.html" class="nav-link"><i class="fas fa-history"></i> Leave History</a>
+            <a href="directory.html" class="nav-link"><i class="fas fa-address-book"></i> Profiles</a>
+        </div>
+        <div class="navbar-center"
+            style="display: flex; align-items: center; gap: 0.5rem; max-width: 480px; flex: 1; justify-content: center;">
+            <div style="flex: 1; max-width: 400px; position: relative;">
+                <input type="text" class="command-search"
+                    placeholder="Search notifications, faculty, or actions (Ctrl + K)">
+            </div>
+            <button class="btn btn-secondary" style="height: 36px; padding: 0 0.75rem; border-radius: var(--radius-sm);"
+                onclick="location.href='directory.html?openFilters=true'">
+                <i class="fas fa-filter"></i>
+            </button>
+        </div>
+        <div class="navbar-right">
+            <div
+                style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; background: var(--bg-main); padding: 0.25rem 0.625rem; border-radius: 50px; border: 1px solid var(--border-medium);">
+                2025-2026
+            </div>
+            <a href="notifications.html"
+                style="color: var(--text-muted); position: relative; font-size: 1.125rem; margin: 0 0.5rem; text-decoration: none;">
+                <i class="far fa-bell"></i>
+                <span class="notif-badge"
+                    style="position: absolute; top: -4px; right: -4px; background: var(--danger); color: white; font-size: 0.55rem; padding: 1px 3px; border-radius: 10px; min-width: 14px; text-align: center; display: none; border: 2px solid white;">0</span>
+            </a>
+
+            <div class="profile-dropdown-container">
+                <div class="profile-pill" id="profilePill">
+                    <div class="profile-info">
+                        <span class="profile-name" id="user-nav-name">...</span>
+                        <span class="profile-role" id="user-nav-role">Faculty</span>
+                    </div>
+                    <div class="profile-avatar" id="user-nav-avatar">?</div>
+                </div>
+                <div class="profile-dropdown-menu" id="profileMenu">
+                    <a href="details.html"><i class="fas fa-user-circle"></i> Weekly Timetable</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="notif-container">
+            <div
+                style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-medium); padding-bottom: 1.5rem;">
+                <div>
+                    <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">
+                        Notifications</h1>
+                    <p style="color: var(--text-muted); font-size: 0.8125rem; font-weight: 500;">Manage your
+                        takeover requests and system alerts.</p>
+                </div>
+                <button class="btn btn-secondary" style="font-size: 0.8125rem; font-weight: 600;"
+                    onclick="markAllRead()">Mark all as read</button>
+            </div>
+
+            <div class="filter-tabs">
+                <div class="filter-tab active" onclick="setFilter('all', this)">All Notifications</div>
+                <div class="filter-tab" onclick="setFilter('request', this)">Requests</div>
+                <div class="filter-tab" onclick="setFilter('alert', this)">Alerts</div>
+            </div>
+
+            <div id="notif-container">
+                <!-- Notifications loaded dynamically -->
+            </div>
+        </div>
+    </main>
+
+    <script src="js/db.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+        let currentFilter = 'all';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadNotifications();
+        });
+
+        function setFilter(filter, el) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+            el.classList.add('active');
+            loadNotifications();
+        }
+
+        function markAllRead() {
+            const currentUser = db.getCurrentUser();
+            if (!currentUser) return;
+            const notifs = db.getNotifications(currentUser.id);
+            notifs.forEach(n => {
+                if (!n.read) db.markAsRead(n.id);
+            });
+            loadNotifications();
+            if (window.updateNotificationBadge) updateNotificationBadge(currentUser.id);
+        }
+
+        function loadNotifications() {
+            const container = document.getElementById('notif-container');
+            const currentUser = db.getCurrentUser();
+            if (!currentUser) return;
+
+            let notifs = db.getNotifications(currentUser.id);
+
+            // Apply Filters
+            if (currentFilter === 'request') {
+                notifs = notifs.filter(n => n.type === 'request');
+            } else if (currentFilter === 'alert') {
+                notifs = notifs.filter(n => n.type !== 'request');
+            }
+
+            if (notifs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-bell-slash"></i>
+                        <h3 style="margin-top: 1rem; color: var(--text-main);">All caught up!</h3>
+                        <p>You don't have any ${currentFilter === 'all' ? '' : currentFilter} notifications at the moment.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = notifs.map((n, index) => {
+                let icon = 'fa-info-circle';
+                let color = 'var(--primary-600)';
+                let bg = 'rgba(37, 99, 235, 0.1)';
+                let actions = '';
+
+                if (n.type === 'request') {
+                    icon = 'fa-exchange-alt';
+                    color = '#f59e0b'; // amber
+                    bg = 'rgba(245, 158, 11, 0.1)';
+                    if (!n.read) {
+                        actions = `
+                            <div class="notif-actions">
+                                <button class="action-btn btn-accept" onclick="acceptRequest(${n.id})">Accept Request</button>
+                                <button class="action-btn btn-reject" onclick="rejectRequest(${n.id})">Decline</button>
+                            </div>
+                        `;
+                    }
+                } else if (n.type === 'approval') {
+                    icon = 'fa-check-circle';
+                    color = '#10b981'; // emerald
+                    bg = 'rgba(16, 185, 129, 0.1)';
+                } else if (n.type === 'rejection') {
+                    icon = 'fa-times-circle';
+                    color = '#ef4444'; // red
+                    bg = 'rgba(239, 68, 68, 0.1)';
+                }
+
+                let desc = '';
+                if (n.type === 'request') {
+                    desc = `<b>${n.fromName}</b> has requested you to take over their <b>${n.data.subject}</b> class on <b>${n.data.day}</b> (Period ${n.data.period}).`;
+                } else if (n.type === 'approval') {
+                    desc = `<b>${n.fromName}</b> <b>accepted</b> your takeover request for ${n.data.msg}.`;
+                } else if (n.type === 'rejection') {
+                    desc = `<b>${n.fromName}</b> <b style="color:#ef4444">declined</b> your takeover request for ${n.data.msg}.`;
+                } else {
+                    desc = n.data.msg || 'System Notice';
+                }
+
+                const timeStr = formatNotifTime(n.timestamp);
+                const delay = index * 0.05;
+
+                return `
+                    <div class="notif-item reveal ${!n.read ? 'unread' : ''}"
+                         style="animation-delay: ${delay}s"
+                         onclick="if(${!n.read}) { db.markAsRead(${n.id}); loadNotifications(); updateNotificationBadge('${currentUser.id}'); }">
+                        <div class="notif-icon-box" style="background: ${bg}; color: ${color};">
+                            <i class="fas ${icon}"></i>
+                        </div>
+                        <div class="notif-body">
+                            <div class="notif-header">
+                                <div class="notif-title">${n.type.charAt(0).toUpperCase() + n.type.slice(1)} Notification</div>
+                                <div class="notif-time">${timeStr}</div>
+                            </div>
+                            <div class="notif-desc">${desc}</div>
+                            ${actions}
+                        </div>
+                        ${!n.read ? '<div class="unread-indicator"></div>' : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatNotifTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = (now - date) / 1000; // seconds
+
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        }
+
+        function acceptRequest(notifId) {
+            const notifs = JSON.parse(localStorage.getItem('facultySync_notifications')) || [];
+            const n = notifs.find(x => x.id === notifId);
+            if (!n) return;
+
+            const currentUser = db.getCurrentUser();
+
+            currentUser.timetable[n.data.cellId] = {
+                subject: n.data.subject,
+                section: "Takeover",
+                room: "Remote/Assigned"
+            };
+
+            db.saveProfile(currentUser.id, currentUser);
+            db.markAsRead(notifId);
+
+            db.sendNotification(n.from, currentUser.id, 'approval', {
+                msg: `${n.data.subject} on ${n.data.day} (P${n.data.period})`
+            });
+
+            loadNotifications();
+            if (window.updateNotificationBadge) updateNotificationBadge(currentUser.id);
+        }
+
+        function rejectRequest(notifId) {
+            const notifs = JSON.parse(localStorage.getItem('facultySync_notifications')) || [];
+            const n = notifs.find(x => x.id === notifId);
+            if (!n) return;
+
+            const currentUser = db.getCurrentUser();
+            db.markAsRead(notifId);
+
+            db.sendNotification(n.from, currentUser.id, 'rejection', {
+                msg: `${n.data.subject} on ${n.data.day} (P${n.data.period})`
+            });
+
+            loadNotifications();
+            if (window.updateNotificationBadge) updateNotificationBadge(currentUser.id);
+        }
+    </script>
+</body>
+
+</html>

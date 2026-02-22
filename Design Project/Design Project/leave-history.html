@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave History - FacultySync</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/db.js"></script>
+    <script src="js/common.js"></script>
+    <style>
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            border: 1px solid var(--border-light);
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .history-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .history-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-approved {
+            background: #ecfdf5;
+            color: #059669;
+        }
+
+        .status-pending {
+            background: #fffbeb;
+            color: #d97706;
+        }
+
+        .status-rejected {
+            background: #f1f5f9;
+            color: #475569;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+
+        <div class="navbar-left">
+            <a href="dashboard.html" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="leave-history.html" class="nav-link active"><i class="fas fa-history"></i> Leave History</a>
+            <a href="directory.html" class="nav-link"><i class="fas fa-address-book"></i> Profiles</a>
+        </div>
+        <div class="navbar-center"
+            style="display: flex; align-items: center; gap: 0.5rem; max-width: 480px; flex: 1; justify-content: center;">
+            <div style="flex: 1; max-width: 400px; position: relative;">
+                <input type="text" class="command-search" placeholder="Search history or actions (Ctrl + K)">
+            </div>
+            <button class="btn btn-secondary" style="height: 36px; padding: 0 0.75rem; border-radius: var(--radius-sm);"
+                onclick="location.href='directory.html?openFilters=true'">
+                <i class="fas fa-filter"></i>
+            </button>
+        </div>
+        <div class="navbar-right">
+            <div
+                style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; background: var(--bg-main); padding: 0.25rem 0.625rem; border-radius: 50px; border: 1px solid var(--border-medium);">
+                2025-2026
+            </div>
+            <a href="notifications.html"
+                style="color: var(--text-muted); position: relative; font-size: 1.125rem; margin: 0 0.5rem; text-decoration: none;">
+                <i class="far fa-bell"></i>
+                <span class="notif-badge"
+                    style="position: absolute; top: -4px; right: -4px; background: var(--danger); color: white; font-size: 0.55rem; padding: 1px 3px; border-radius: 10px; min-width: 14px; text-align: center; display: none; border: 2px solid white;">0</span>
+            </a>
+
+            <div class="profile-dropdown-container">
+                <div class="profile-pill" id="profilePill">
+                    <div class="profile-info">
+                        <span class="profile-name" id="user-nav-name">...</span>
+                        <span class="profile-role" id="user-nav-role">Faculty</span>
+                    </div>
+                    <div class="profile-avatar" id="user-nav-avatar">?</div>
+                </div>
+                <div class="profile-dropdown-menu" id="profileMenu">
+                    <a href="details.html"><i class="fas fa-user-circle"></i> Weekly Timetable</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div style="margin-bottom: 2.5rem;">
+            <h1 style="font-size: 1.875rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">
+                Leave History</h1>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">View and track all your leave requests.</p>
+        </div>
+
+        <div class="card" style="padding: 0;">
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Request Time</th>
+                        <th>Period/Subject</th>
+                        <th>Substituted By</th>
+                        <th>Status</th>
+                        <th>Response Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-main);">Feb 10, 2026</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">08:30 AM</div>
+                        </td>
+                        <td>Period 3: OS Lab</td>
+                        <td>Dr. Kavita Singh</td>
+                        <td><span class="status-badge status-approved">Approved</span></td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-main);">Feb 10, 2026</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">10:45 AM (Accepted)</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-main);">Feb 05, 2026</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">09:12 AM</div>
+                        </td>
+                        <td>Period 1: DS</td>
+                        <td>Ms. Sneha Reddy</td>
+                        <td><span class="status-badge status-approved">Approved</span></td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-main);">Feb 05, 2026</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">11:20 AM (Accepted)</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-main);">Jan 28, 2026</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">02:15 PM</div>
+                        </td>
+                        <td>Period 5: Python</td>
+                        <td>Auto-Match Fail</td>
+                        <td><span class="status-badge status-rejected">Canceled</span></td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--text-main);">Jan 28, 2026</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">02:45 PM (Declined)</div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- No extra scripts needed as common.js handles initialization -->
+</body>
+
+</html>

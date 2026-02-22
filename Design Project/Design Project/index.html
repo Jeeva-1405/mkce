@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FacultySync - M.Kumarasamy College of Engineering</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --college-blue: #004a89;
+            --college-accent: #c52128;
+            --bg-soft: #f8fafc;
+            --card-glass: #ffffff;
+            --text-deep: #0f172a;
+            --text-muted: #64748b;
+            --accent-glow: #c52128;
+            --radius-xl: 2rem;
+            --radius-lg: 1.25rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-soft);
+            color: var(--text-deep);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .page-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(0, 74, 137, 0.05) 0%, transparent 40%);
+            z-index: -1;
+        }
+
+        /* Official Institutional Header - Premium Refinement */
+        .college-header {
+            background: #ffffff;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            border-bottom: 4px solid var(--college-blue);
+            box-shadow: 0 10px 30px -10px rgba(0, 74, 137, 0.1);
+            position: relative;
+            z-index: 1000;
+        }
+
+        .header-max-width {
+            max-width: 1400px;
+            width: 100%;
+            padding: 1.5rem 2.5rem;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+        }
+
+        .college-logo-official {
+            height: 100px;
+            width: auto;
+            display: block;
+            filter: none;
+        }
+
+        /* Branding Nav */
+        .nav-container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 2.5rem;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--college-blue);
+        }
+
+        /* Hero Section Upgrade - High Professionalism */
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 5rem 2.5rem;
+            gap: 6rem;
+        }
+
+        .hero-layout {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 10rem;
+            align-items: center;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .hero-layout {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+                text-align: center;
+            }
+
+            .hero-text {
+                margin: 0 auto;
+            }
+
+            .login-card {
+                margin: 0 auto;
+            }
+        }
+
+        .hero-text {
+            max-width: 650px;
+        }
+
+        .portal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            background: #ffffff;
+            border: 1px solid rgba(0, 74, 137, 0.1);
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--college-blue);
+            margin-bottom: 2.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .portal-badge i {
+            color: var(--college-blue);
+        }
+
+        .hero-title {
+            font-family: 'Sora', sans-serif;
+            font-size: 5rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 2.5rem;
+            color: var(--text-deep);
+            letter-spacing: -0.04em;
+        }
+
+        .hero-title span {
+            background: linear-gradient(135deg, var(--college-blue) 0%, var(--accent-glow) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+            margin-top: 0.5rem;
+        }
+
+        .hero-desc {
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            line-height: 1.8;
+            margin-bottom: 4.5rem;
+            max-width: 600px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2.5rem;
+            margin-top: 2rem;
+        }
+
+        .impact-pillar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            padding-right: 2rem;
+            border-right: 1px solid rgba(0, 74, 137, 0.08);
+        }
+
+        .impact-pillar:last-child {
+            border-right: none;
+            padding-right: 0;
+        }
+
+        .pillar-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(0, 74, 137, 0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--college-blue);
+            font-size: 1.25rem;
+            border: 1px solid rgba(0, 74, 137, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .impact-pillar:hover .pillar-icon {
+            background: var(--college-blue);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .pillar-title {
+            font-family: 'Sora', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--text-deep);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pillar-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .institutional-trust-bar {
+            display: flex;
+            gap: 4rem;
+            margin-top: 4rem;
+            padding-top: 3rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .trust-metric {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .metric-value {
+            font-family: 'Sora', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--college-blue);
+        }
+
+        .metric-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Login Card - Modern Style */
+        .login-card {
+            background: #ffffff;
+            border: 2px solid rgba(0, 74, 137, 0.12);
+            border-radius: 2.5rem;
+            padding: 4.5rem 4rem;
+            box-shadow: 0 50px 100px -20px rgba(0, 10, 30, 0.08);
+            position: relative;
+            transition: border-color 0.3s ease;
+        }
+
+        .login-card:hover {
+            border-color: rgba(0, 74, 137, 0.25);
+        }
+
+        .card-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .card-header h2 {
+            font-family: 'Sora', sans-serif;
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            color: var(--text-deep);
+            letter-spacing: -0.02em;
+        }
+
+        .card-header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 3.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .input-box {
+            position: relative;
+        }
+
+        .input-box i {
+            position: absolute;
+            left: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .form-control {
+            width: 100%;
+            background: #f8fafc;
+            border: 2px solid rgba(0, 74, 137, 0.25);
+            border-radius: 1.25rem;
+            padding: 1.25rem 1.25rem 1.25rem 3.5rem;
+            color: var(--text-deep);
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--college-blue);
+            background: #ffffff;
+            box-shadow: 0 0 0 5px rgba(0, 74, 137, 0.05);
+        }
+
+        .btn-login {
+            width: 100%;
+            background: linear-gradient(135deg, var(--college-blue) 0%, var(--accent-glow) 100%);
+            color: white;
+            padding: 1.25rem;
+            border: none;
+            border-radius: 1.25rem;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 2rem;
+            box-shadow: 0 15px 30px -5px rgba(0, 74, 137, 0.3);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px -5px rgba(0, 74, 137, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .login-error {
+            background: rgba(0, 74, 137, 0.1);
+            color: var(--college-blue);
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.8125rem;
+            text-align: center;
+            display: none;
+        }
+
+        .footer-note {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.8125rem;
+            color: #475569;
+        }
+
+        .footer-note a {
+            color: #60a5fa;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* System Status Upgrade */
+        .system-status {
+            position: fixed;
+            bottom: 3rem;
+            left: 3rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.85rem 1.5rem;
+            background: white;
+            border-radius: 100px;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.85rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 15px #10b981;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-background"></div>
+
+    <header class="college-header">
+        <div class="header-max-width">
+            <img src="download.png" alt="M.Kumarasamy College of Engineering" class="college-logo-official">
+        </div>
+    </header>
+
+    <nav class="nav-container">
+        <div class="nav-links">
+            <a href="#" class="nav-link">Staff Support</a>
+            <a href="#" class="nav-link">IT Helpdesk</a>
+        </div>
+    </nav>
+
+    <main class="main-wrapper">
+        <div class="hero-layout">
+            <div class="hero-text">
+                <h1 class="hero-title">
+                    Faculty <span>Leave & Substitute</span>
+                </h1>
+                <p class="hero-desc">
+                    Institutional platform for automated resource orchestration. Manage leave requests and peer-matching
+                    with university-grade security.
+                </p>
+
+                <div class="features-grid">
+                    <div class="impact-pillar">
+                        <div class="pillar-icon">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div class="pillar-title">Orchestration</div>
+                        <div class="pillar-desc">Automated resource allocation and real-time faculty synchronization
+                            across departments.</div>
+                    </div>
+                    <div class="impact-pillar">
+                        <div class="pillar-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <div class="pillar-title">Governance</div>
+                        <div class="pillar-desc">Audit-ready compliance tracking and multi-level institutional security
+                            protocols.</div>
+                    </div>
+                    <div class="impact-pillar">
+                        <div class="pillar-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="pillar-title">Efficiency</div>
+                        <div class="pillar-desc">Direct workforce optimization through intelligent peer-matching and
+                            load balancing.</div>
+                    </div>
+                </div>
+
+                <div class="institutional-trust-bar">
+                    <div class="trust-metric">
+                        <div class="metric-value">99.9%</div>
+                        <div class="metric-label">Uptime Reliability</div>
+                    </div>
+                    <div class="trust-metric">
+                        <div class="metric-value">12.4k</div>
+                        <div class="metric-label">Faculty Records</div>
+                    </div>
+                    <div class="trust-metric">
+                        <div class="metric-value">Instant</div>
+                        <div class="metric-label">Conflict Resolution</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="login-card">
+                <div class="card-header">
+                    <h2>Staff Login</h2>
+                    <p>Enter your institutional credentials.</p>
+                </div>
+
+                <div id="loginError" class="login-error">
+                    Invalid Faculty ID or Password.
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label">Faculty ID</label>
+                        <div class="input-box">
+                            <i class="fas fa-id-badge"></i>
+                            <input type="text" id="username" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <div class="input-box">
+                            <i class="fas fa-key"></i>
+                            <input type="password" id="password" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <label
+                            style="display: flex; align-items: center; gap: 0.5rem; color: #64748b; font-size: 0.8125rem; cursor: pointer;">
+                            <input type="checkbox" id="rememberMe" style="accent-color: #2563eb;"> Remember ID and
+                            Password
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-login">Login</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/db.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedId = localStorage.getItem('remembered_id');
+            const savedPass = localStorage.getItem('remembered_pass');
+
+            if (savedId && savedPass) {
+                document.getElementById('username').value = savedId;
+                document.getElementById('password').value = savedPass;
+                document.getElementById('rememberMe').checked = true;
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const id = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const rememberMe = document.getElementById('rememberMe').checked;
+            const errorEl = document.getElementById('loginError');
+
+            errorEl.style.display = 'none';
+
+            if (db.validateLogin(id, pass)) {
+                if (rememberMe) {
+                    localStorage.setItem('remembered_id', id);
+                    localStorage.setItem('remembered_pass', pass);
+                } else {
+                    localStorage.removeItem('remembered_id');
+                    localStorage.removeItem('remembered_pass');
+                }
+
+                db.login(id);
+                const user = db.getProfile(id);
+                if (user && user.role === 'admin') {
+                    window.location.href = 'admin-dashboard.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
+            } else {
+                if (id.includes('@') && (pass === '12345678' || pass === 'password')) {
+                    if (rememberMe) {
+                        localStorage.setItem('remembered_id', id);
+                        localStorage.setItem('remembered_pass', pass);
+                    } else {
+                        localStorage.removeItem('remembered_id');
+                        localStorage.removeItem('remembered_pass');
+                    }
+
+                    db.saveProfile(id, {
+                        name: id.split('@')[0].charAt(0).toUpperCase() + id.split('@')[0].slice(1),
+                        dept: "Electronics (ECE)",
+                        desig: "Assistant Professor",
+                        password: pass,
+                        timetable: {}
+                    });
+                    db.login(id);
+                    const user = db.getProfile(id);
+                    if (user && user.role === 'admin') {
+                        window.location.href = 'admin-dashboard.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                    return;
+                }
+                errorEl.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>

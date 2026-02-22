@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard - FacultySync</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/db.js"></script>
+    <script src="js/common.js"></script>
+    <style>
+        .dashboard-grid {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar-user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1.25rem 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .user-initials {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-accent);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: white;
+        }
+
+        .stat-card-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            background: var(--primary-light);
+            color: var(--primary-accent);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+            font-weight: 500;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-medium);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .timeline-period {
+            font-weight: 600;
+            width: 90px;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+        }
+
+        .timeline-item {
+            padding: 1.25rem 0;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .subject-name {
+            font-weight: 600;
+            font-size: 0.9375rem;
+            color: var(--text-main);
+            margin-bottom: 0.125rem;
+        }
+
+        .class-meta {
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .alert-item {
+            padding: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            border-bottom: 1px solid var(--border-light);
+            transition: background-color 0.1s;
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-icon {
+            margin-top: 0.125rem;
+            font-size: 0.875rem;
+            color: var(--primary-accent);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-main);
+            color: white;
+            border: 1px solid var(--primary-main);
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Crisp SVG Success Animation - Fixed Visibility */
+        .success-animation {
+            margin: 20px auto;
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 4;
+            stroke-miterlimit: 10;
+            stroke: #4CAF50;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            stroke-width: 5;
+            stroke: #4CAF50;
+            fill: none;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- (Modals preserved) -->
+    <div class="modal-overlay" id="leaveModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 0.5rem;">Request Leave</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Select the period you need a
+                substitute for.</p>
+            <div id="leave-period-list"
+                style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2rem;"></div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-secondary w-full" onclick="closeLeaveModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ... rest of modals ... -->
+    <div class="modal-overlay" id="facultySelectModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 0.5rem;">Select Substitute</h2>
+            <p id="faculty-select-msg" style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                Select an available faculty to send a request.</p>
+            <div id="available-faculty-list"
+                style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2rem; max-height: 300px; overflow-y: auto;">
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-secondary w-full" onclick="closeFacultySelectModal()">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-content" style="max-width: 350px; text-align: center; padding: 3rem 2rem;">
+            <div class="success-animation">
+                <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
+                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+                </svg>
+            </div>
+            <h3 style="margin-top: 2rem; color: var(--text-main);">Request Sent!</h3>
+            <p id="allocation-msg" style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.5rem;"></p>
+        </div>
+    </div>
+    <nav class="navbar">
+
+        <div class="navbar-left">
+            <a href="dashboard.html" class="nav-link active"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="leave-history.html" class="nav-link"><i class="fas fa-history"></i> Leave History</a>
+            <a href="directory.html" class="nav-link"><i class="fas fa-address-book"></i> Profiles</a>
+        </div>
+        <div class="navbar-center"
+            style="display: flex; align-items: center; gap: 0.5rem; max-width: 480px; flex: 1; justify-content: center;">
+            <div style="flex: 1; max-width: 400px; position: relative;">
+                <input type="text" class="command-search" placeholder="Search classes, faculty, or actions (Ctrl + K)">
+            </div>
+            <button class="btn btn-secondary" style="height: 36px; padding: 0 0.75rem; border-radius: var(--radius-sm);"
+                onclick="location.href='directory.html?openFilters=true'">
+                <i class="fas fa-filter"></i>
+            </button>
+        </div>
+        <div class="navbar-right">
+            <div
+                style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; background: var(--bg-main); padding: 0.25rem 0.625rem; border-radius: 50px; border: 1px solid var(--border-medium);">
+                2025-2026
+            </div>
+            <a href="notifications.html"
+                style="color: var(--text-muted); position: relative; font-size: 1.125rem; margin: 0 0.5rem; text-decoration: none;">
+                <i class="far fa-bell"></i>
+                <span class="notif-badge"
+                    style="position: absolute; top: -4px; right: -4px; background: var(--danger); color: white; font-size: 0.55rem; padding: 1px 3px; border-radius: 10px; min-width: 14px; text-align: center; display: none; border: 2px solid white;">0</span>
+            </a>
+
+            <div class="profile-dropdown-container">
+                <div class="profile-pill" id="profilePill">
+                    <div class="profile-info">
+                        <span class="profile-name" id="user-nav-name">...</span>
+                        <span class="profile-role" id="user-nav-role">Faculty</span>
+                    </div>
+                    <div class="profile-avatar" id="user-nav-avatar">?</div>
+                </div>
+                <div class="profile-dropdown-menu" id="profileMenu">
+                    <a href="details.html"><i class="fas fa-user-circle"></i> Weekly Timetable</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">
+                    Dashboard</h1>
+                <p id="today-date-text" style="color: var(--text-muted); font-size: 0.8125rem; font-weight: 500;">
+                </p>
+            </div>
+            <button class="btn btn-primary" onclick="openLeaveModal()">
+                <i class="fas fa-plus"></i> Request Leave
+            </button>
+        </div>
+
+        <div class="stat-card-grid">
+            <div class="stat-card reveal delay-1">
+                <div class="stat-icon" style="background: rgba(0, 74, 137, 0.1); color: var(--primary-main);">
+                    <i class="fas fa-chalkboard-user"></i>
+                </div>
+                <div>
+                    <div id="classes-count" class="stat-value">0</div>
+                    <div class="stat-label">Classes Today</div>
+                </div>
+            </div>
+            <div class="stat-card reveal delay-2">
+                <div class="stat-icon" style="background: rgba(217, 119, 6, 0.1); color: #d97706;">
+                    <i class="fas fa-mug-hot"></i>
+                </div>
+                <div>
+                    <div id="free-count" class="stat-value">0</div>
+                    <div class="stat-label">Free Periods</div>
+                </div>
+            </div>
+            <a href="leave-history.html" class="stat-card reveal delay-3" style="text-decoration: none;">
+                <div class="stat-icon" style="background: rgba(197, 33, 40, 0.1); color: var(--primary-accent);">
+                    <i class="fas fa-user-clock"></i>
+                </div>
+                <div>
+                    <div id="pending-count" class="stat-value">0</div>
+                    <div class="stat-label">Pending Leaves</div>
+                </div>
+            </a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 340px; gap: 2rem; align-items: start;">
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <section class="card reveal delay-2" style="padding: 1.5rem;">
+                    <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-main);">
+                        Today's Schedule &mdash; <span id="current-day-name"
+                            style="color: var(--text-muted); font-weight: 500;">Day</span>
+                    </h3>
+                    <div id="timeline-container"></div>
+                </section>
+
+                <section class="card" style="padding: 1.5rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-main); margin: 0;">Substitution
+                            Activity</h3>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">Monthly
+                            Trend</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; text-align: center;">
+                        <div style="padding: 1rem; background: var(--bg-main); border-radius: var(--radius-sm);">
+                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary-main);">08</div>
+                            <div
+                                style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-top: 0.25rem;">
+                                Taken By Me</div>
+                        </div>
+                        <div style="padding: 1rem; background: var(--bg-main); border-radius: var(--radius-sm);">
+                            <div style="font-size: 1.25rem; font-weight: 700; color: #10b981;">04</div>
+                            <div
+                                style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-top: 0.25rem;">
+                                Help Given</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <section class="card reveal delay-3" style="padding: 1.5rem;">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-main); margin: 0;">Recent Alerts
+                    </h3>
+                    <a href="notifications.html"
+                        style="font-size: 0.75rem; color: var(--primary-600); font-weight: 600; text-decoration: none;">View
+                        all</a>
+                </div>
+                <div id="alerts-list"></div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        let profileData = null;
+        let todayClasses = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            profileData = db.getCurrentUser();
+            if (!profileData) return;
+
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const now = new Date();
+            const dayName = days[now.getDay()];
+            document.getElementById('current-day-name').innerText = dayName;
+            document.getElementById('today-date-text').innerText = `${dayName}, ${now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+
+            const dayIndex = now.getDay() - 1; // Mon=0
+
+            // Initialize stats for the current day
+            document.getElementById('classes-count').innerText = "0";
+            document.getElementById('free-count').innerText = "0";
+
+            if (dayIndex >= 0 && dayIndex <= 4) {
+                // On working days, free periods are 7 minus occupied classes
+                document.getElementById('free-count').innerText = "7";
+                for (let p = 1; p <= 7; p++) {
+                    const cellId = `cell-${dayIndex}-${p}`;
+                    if (profileData.timetable[cellId]) todayClasses.push({ ...profileData.timetable[cellId], period: p });
+                }
+                renderDashboard(todayClasses);
+            } else {
+                document.getElementById('timeline-container').innerHTML = '<p style="padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">No classes scheduled for today.</p>';
+            }
+
+            loadRecentAlerts();
+            const pendingNotifs = db.getNotifications(profileData.id).filter(n => !n.read && n.type === 'request').length;
+            document.getElementById('pending-count').innerText = pendingNotifs;
+        });
+
+        function loadRecentAlerts() {
+            const container = document.getElementById('alerts-list');
+            const currentUser = db.getCurrentUser();
+            const notifs = db.getNotifications(currentUser.id).slice(0, 4);
+
+            if (notifs.length === 0) {
+                container.innerHTML = '<p style="font-size: 0.8125rem; color: var(--text-muted); padding: 1rem 0;">No recent alerts.</p>';
+                return;
+            }
+
+            container.innerHTML = notifs.map(n => {
+                let icon = 'fa-info-circle';
+                let color = 'var(--primary-accent)';
+                if (n.type === 'request') { icon = 'fa-exchange-alt'; color = 'var(--warning)'; }
+                else if (n.type === 'approval') { icon = 'fa-check-circle'; color = 'var(--success)'; }
+                else if (n.type === 'rejection') { icon = 'fa-times-circle'; color = 'var(--danger)'; }
+
+                let msg = '';
+                if (n.type === 'request') msg = `Takeover request from ${n.fromName}`;
+                else if (n.type === 'approval') msg = `${n.fromName} accepted request`;
+                else if (n.type === 'rejection') msg = `${n.fromName} declined request`;
+                else msg = n.data.msg || 'System updated';
+
+                return `
+                    <div class="alert-item">
+                        <div class="alert-dot" style="background: ${color}; box-shadow: 0 0 8px ${color}"></div>
+                        <div class="alert-content">
+                            <p>${msg}</p>
+                            <span class="alert-time">${new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderDashboard(classes) {
+            document.getElementById('classes-count').innerText = classes.length;
+            document.getElementById('free-count').innerText = 7 - classes.length;
+            const container = document.getElementById('timeline-container');
+
+            if (classes.length === 0) {
+                container.innerHTML = '<div style="padding: 3rem; text-align: center; color: var(--text-muted); opacity: 0.6;"><i class="fas fa-mug-hot" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i><p>No classes scheduled for today.</p></div>';
+                return;
+            }
+
+            container.innerHTML = classes.map(cls => `
+                <div class="schedule-block" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--border-light);">
+                    <div class="schedule-info" style="flex: 1;">
+                        <h4 style="margin: 0; font-size: 0.9375rem; color: var(--text-main);">${cls.subject}</h4>
+                        <div class="schedule-meta" style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.25rem;">
+                            <span><i class="fas fa-layer-group"></i> ${cls.section}</span> &bull; 
+                            <span><i class="fas fa-graduation-cap"></i> Year ${cls.year}</span> &bull; 
+                            <span><i class="fas fa-clock"></i> Period ${cls.period}</span>
+                        </div>
+                    </div>
+                    <div class="stat-icon" style="width: 36px; height: 36px; font-size: 0.875rem; opacity: 0.9; background: var(--primary-light); color: var(--primary-accent); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        ${cls.period}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // LEAVE MODAL LOGIC
+        function openLeaveModal() {
+            if (todayClasses.length === 0) { showToast("You have no classes today!", "warning"); return; }
+            const container = document.getElementById('leave-period-list');
+            container.innerHTML = todayClasses.map(cls => `
+                <div onclick="showAvailableFaculty(${cls.period}, '${cls.subject}')" 
+                     style="padding: 1rem; border: 1px solid var(--border-light); border-radius: var(--radius-md); cursor: pointer; transition: all 0.15s; margin-bottom: 0.75rem;" 
+                     onmouseover="this.style.borderColor='var(--primary-accent)'; this.style.backgroundColor='#f8fafc'" 
+                     onmouseout="this.style.borderColor='var(--border-light)'; this.style.backgroundColor='transparent'">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-weight:600; font-size: 0.95rem;">Period ${cls.period}: ${cls.subject}</div>
+                            <div style="font-size:0.875rem; color:var(--text-muted);">${cls.section} &bull; Year ${cls.year}</div>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color:var(--primary-accent); font-size: 0.875rem;"></i>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('leaveModal').classList.add('active');
+        }
+
+        function closeLeaveModal() { document.getElementById('leaveModal').classList.remove('active'); }
+
+        function showAvailableFaculty(period, subject) {
+            closeLeaveModal();
+            const container = document.getElementById('available-faculty-list');
+            const dayIndex = new Date().getDay() - 1; // Mon=0
+            const dayName = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][dayIndex];
+
+            const allFaculties = db.getAllFaculties();
+            const available = allFaculties.filter(f =>
+                f.id !== profileData.id &&
+                f.dept === profileData.dept &&
+                !f.timetable[`cell-${dayIndex}-${period}`]
+            );
+
+            if (available.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding: 2rem;">No department faculty are free during this period.</p>';
+            } else {
+                container.innerHTML = available.map(f => `
+                    <div onclick="sendTakeoverRequest('${f.id}', ${period}, '${subject}', '${dayName}')" 
+                         style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid var(--border-light); border-radius: var(--radius-md); cursor: pointer; transition: all 0.15s;">
+                        <div class="user-initials" style="width: 32px; height: 32px; font-size: 0.75rem;">${f.name.split(' ').map(n => n[0]).join('')}</div>
+                        <div>
+                            <div style="font-weight:600; font-size: 0.875rem;">${f.name}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">${f.desig}</div>
+                        </div>
+                        <i class="fas fa-paper-plane" style="margin-left: auto; color: var(--primary-accent); font-size: 0.875rem;"></i>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('facultySelectModal').classList.add('active');
+        }
+
+        function closeFacultySelectModal() {
+            document.getElementById('facultySelectModal').classList.remove('active');
+            document.getElementById('leaveModal').classList.add('active');
+        }
+
+        function sendTakeoverRequest(targetId, period, subject, day) {
+            document.getElementById('facultySelectModal').classList.remove('active');
+
+            const target = db.getProfile(targetId);
+            db.sendNotification(targetId, profileData.id, 'request', {
+                cellId: `cell-${new Date().getDay() - 1}-${period}`,
+                subject: subject,
+                day: day,
+                period: period
+            });
+
+            document.getElementById('allocation-msg').innerHTML = `Your request to take over <b>${subject}</b> has been sent to <b>${target.name}</b>.`;
+            document.getElementById('successModal').classList.add('active');
+
+            setTimeout(() => {
+                document.getElementById('successModal').classList.remove('active');
+                location.reload();
+            }, 2500);
+        }
+
+        // SEARCH LOGIC
+        const searchInput = document.querySelector('.command-search');
+        const resultsDropdown = document.createElement('div');
+        resultsDropdown.className = 'search-results-dropdown';
+        document.querySelector('.navbar-center').appendChild(resultsDropdown);
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (query.length < 2) {
+                resultsDropdown.classList.remove('active');
+                return;
+            }
+
+            const allFaculties = db.getAllFaculties();
+            const matchingFaculties = allFaculties.filter(f =>
+                f.name.toLowerCase().includes(query)
+            );
+
+            let html = '';
+
+            const actions = [
+                { name: 'Request Leave', icon: 'fa-plus', action: openLeaveModal },
+                { name: 'View Timetable', icon: 'fa-calendar-alt', action: () => location.href = 'details.html' },
+                { name: 'Faculty Profile', icon: 'fa-address-book', action: () => location.href = 'directory.html' }
+            ].filter(a => a.name.toLowerCase().includes(query));
+
+            if (actions.length > 0) {
+                html += '<div class="search-section-header">Actions</div>';
+                actions.forEach(a => {
+                    html += `
+                        <div class="search-result-item" onclick="(${a.action.toString()})()">
+                            <div class="result-icon"><i class="fas ${a.icon}"></i></div>
+                            <div class="result-info">
+                                <span class="result-title">${a.name}</span>
+                                <span class="result-subtitle">System Action</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (matchingFaculties.length > 0) {
+                html += '<div class="search-section-header">Profiles</div>';
+                matchingFaculties.forEach(f => {
+                    html += `
+                        <div class="search-result-item" onclick="location.href='directory.html?search=${encodeURIComponent(f.name)}'">
+                            <div class="result-icon"><i class="fas fa-user"></i></div>
+                            <div class="result-info">
+                                <span class="result-title">${f.name}</span>
+                                <span class="result-subtitle">${f.dept} &bull; ${f.desig}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (html === '') {
+                html = '<div style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.8125rem;">No matches found.</div>';
+            }
+
+            resultsDropdown.innerHTML = html;
+            resultsDropdown.classList.add('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !resultsDropdown.contains(e.target)) {
+                resultsDropdown.classList.remove('active');
+            }
+        });
+
+        // Ctrl + K to focus search handled in common.js
+    </script>
+</body>
+
+</html>
