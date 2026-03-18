@@ -1,0 +1,7 @@
+node_modules/
+.env
+.vscode/
+*.log
+
+# Local JSON data files (legacy storage - not needed with MongoDB)
+data/

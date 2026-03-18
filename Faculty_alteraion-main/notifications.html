@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - FacultySync</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/db.js"></script>
+    <script src="js/common.js"></script>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── Layout ── */
+        .notif-container {
+            max-width: 780px;
+            margin: 0 auto;
+        }
+
+        /* ── Page Header ── */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.75rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e4e7ec;
+        }
+
+        .page-header h1 {
+            font-size: 1.375rem;
+            font-weight: 700;
+            color: #1a1d23;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.2rem;
+        }
+
+        .page-header p {
+            color: #8a94a0;
+            font-size: 0.8125rem;
+        }
+
+        /* ── Filter Pills ── */
+        .filter-pills {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-pill {
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #d0d5dd;
+            background: #fff;
+            color: #60697b;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .filter-pill:hover {
+            border-color: #adb5c0;
+            color: #1a1d23;
+        }
+
+        .filter-pill.active {
+            background: #1a1d23;
+            color: #ffffff;
+            border-color: #1a1d23;
+        }
+
+        .pill-count {
+            font-size: 0.65rem;
+            background: rgba(255, 255, 255, 0.25);
+            padding: 1px 5px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .filter-pill:not(.active) .pill-count {
+            background: #f0f2f5;
+            color: #60697b;
+        }
+
+        /* ── Notification Item ── */
+        .notif-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            background: #fff;
+            border: 1px solid #d0d5dd;
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .notif-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .notif-item.unread {
+            background: #fdfeff;
+            border-color: #d4e5f7;
+        }
+
+        .notif-item.unread::before {
+            background: #004a89;
+            opacity: 1;
+        }
+
+        .notif-item:hover {
+            border-color: #c8cdd5;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        /* ── Icon Box ── */
+        .notif-icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.9375rem;
+        }
+
+        /* ── Body ── */
+        .notif-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notif-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.3rem;
+            gap: 1rem;
+        }
+
+        .notif-title {
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: #1a1d23;
+        }
+
+        .notif-time {
+            font-size: 0.7rem;
+            color: #8a94a0;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .notif-desc {
+            font-size: 0.8125rem;
+            color: #60697b;
+            line-height: 1.55;
+            margin-bottom: 0.875rem;
+        }
+
+        .notif-desc b {
+            color: #1a1d23;
+            font-weight: 600;
+        }
+
+        /* ── Action Buttons ── */
+        .notif-actions {
+            display: flex;
+            gap: 0.625rem;
+        }
+
+        .btn-accept {
+            padding: 0.45rem 1.1rem;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            background: #004a89;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        .btn-accept:hover {
+            background: #003a6c;
+            transform: translateY(-1px);
+        }
+
+        .btn-decline {
+            padding: 0.45rem 1.1rem;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: #fff;
+            border: 1px solid #e4e7ec;
+            color: #374151;
+            transition: all 0.15s;
+        }
+
+        .btn-decline:hover {
+            background: #f7f8fa;
+            border-color: #adb5c0;
+        }
+
+        /* ── Unread dot ── */
+        .unread-dot {
+            width: 7px;
+            height: 7px;
+            background: #004a89;
+            border-radius: 50%;
+            position: absolute;
+            top: 1.25rem;
+            right: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        /* ── Empty State ── */
+        .empty-state {
+            text-align: center;
+            padding: 5rem 2rem;
+            border: 1px dashed #e4e7ec;
+            border-radius: 12px;
+            color: #8a94a0;
+            background: #fafbfc;
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 1rem;
+            opacity: 0.35;
+        }
+
+        .empty-state h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 0.4rem;
+        }
+
+        .empty-state p {
+            font-size: 0.8125rem;
+        }
+
+        /* ── Header action btn ── */
+        .mark-all-btn {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #60697b;
+            background: #f7f8fa;
+            border: 1px solid #e4e7ec;
+            padding: 0.4rem 0.875rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.15s;
+            flex-shrink: 0;
+        }
+
+        .mark-all-btn:hover {
+            background: #f0f2f5;
+            border-color: #adb5c0;
+            color: #1a1d23;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <img src="college_banner.png" class="nav-institutional-logo" alt="MKCE Logo">
+        </div>
+        <div class="navbar-center">
+            <a href="dashboard.html" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="leave-history.html" class="nav-link"><i class="fas fa-history"></i> Leave History</a>
+            <a href="directory.html" class="nav-link"><i class="fas fa-address-book"></i> Profiles</a>
+        </div>
+        <div class="navbar-right">
+            <div class="nav-year-tag">2025-2026</div>
+            <a href="notifications.html" class="nav-notif-link active" title="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notif-badge" style="display: none;">0</span>
+            </a>
+            <div class="profile-dropdown-container">
+                <div class="profile-pill" id="profilePill">
+                    <div class="profile-info">
+                        <span class="profile-name" id="user-nav-name">...</span>
+                        <span class="profile-role" id="user-nav-role">Faculty</span>
+                    </div>
+                    <div class="profile-avatar" id="user-nav-avatar">?</div>
+                </div>
+                <div class="profile-dropdown-menu" id="profileMenu">
+                    <a href="details.html"><i class="fas fa-user-circle"></i> Profile</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="notif-container">
+
+            <!-- Page Header -->
+            <div class="page-header reveal">
+                <div>
+                    <h1 style="font-size: 1.5rem; font-weight: 600; color: #0f172a; margin-bottom: 0.25rem;">Notifications</h1>
+                    <p style="color: #64748b; font-size: 0.8125rem;">Manage your substitution requests and system alerts.</p>
+                </div>
+                <button class="mark-all-btn" onclick="markAllRead()">
+                    <i class="fas fa-check-double"></i> Mark all read
+                </button>
+            </div>
+
+            <!-- Filter Pills -->
+            <div class="filter-pills">
+                <div class="filter-pill active" id="pill-all" onclick="setFilter('all', this)">
+                    <i class="fas fa-inbox"></i> All
+                    <span class="pill-count" id="count-all">0</span>
+                </div>
+                <div class="filter-pill" id="pill-request" onclick="setFilter('request', this)">
+                    <i class="fas fa-exchange-alt"></i> Requests
+                    <span class="pill-count" id="count-request">0</span>
+                </div>
+                <div class="filter-pill" id="pill-alert" onclick="setFilter('alert', this)">
+                    <i class="fas fa-bell"></i> Alerts
+                    <span class="pill-count" id="count-alert">0</span>
+                </div>
+            </div>
+
+            <!-- Notification List -->
+            <div id="notif-container"></div>
+
+        </div>
+    </main>
+
+    <script>
+        let currentFilter = 'all';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadNotifications();
+        });
+
+        async function setFilter(filter, el) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            await loadNotifications();
+        }
+
+        async function markAllRead() {
+            const currentUser = await db.getCurrentUser();
+            if (!currentUser) return;
+            const notifs = await db.getNotifications(currentUser.id);
+            for (const n of notifs) {
+                if (!n.read) await db.markAsRead(n.id);
+            }
+            await loadNotifications();
+            if (window.updateNotificationBadge) await updateNotificationBadge(currentUser.id);
+        }
+
+        async function loadNotifications() {
+            const container = document.getElementById('notif-container');
+            const currentUser = await db.getCurrentUser();
+            if (!currentUser) return;
+
+            let notifs = await db.getNotifications(currentUser.id);
+
+            // Update pill counts
+            const allCount = notifs.length;
+            const reqCount = notifs.filter(n => n.type === 'request' || n.type === 'hod_request').length;
+            const alertCount = notifs.filter(n => n.type !== 'request' && n.type !== 'hod_request').length;
+            document.getElementById('count-all').innerText = allCount;
+            document.getElementById('count-request').innerText = reqCount;
+            document.getElementById('count-alert').innerText = alertCount;
+
+            // Apply filter
+            if (currentFilter === 'request') notifs = notifs.filter(n => n.type === 'request' || n.type === 'hod_request');
+            else if (currentFilter === 'alert') notifs = notifs.filter(n => n.type !== 'request' && n.type !== 'hod_request');
+
+            if (notifs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-bell-slash"></i>
+                        <h3>All caught up!</h3>
+                        <p>You have no ${currentFilter !== 'all' ? currentFilter : ''} notifications right now.</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = notifs.map((n, i) => {
+                const typeMap = {
+                    request: { icon: 'fa-exchange-alt', color: '#d97706', bg: 'rgba(245,158,11,0.1)', title: 'Substitution Request' },
+                    hod_request: { icon: 'fa-user-shield', color: '#7c3aed', bg: 'rgba(124,58,237,0.1)', title: 'HOD Approval Required' },
+                    approval: { icon: 'fa-circle-check', color: '#059669', bg: 'rgba(16,185,129,0.1)', title: 'Request Accepted' },
+                    rejection: { icon: 'fa-circle-xmark', color: '#dc2626', bg: 'rgba(239,68,68,0.1)', title: 'Request Declined' },
+                };
+                const cfg = typeMap[n.type] || { icon: 'fa-info-circle', color: '#004a89', bg: 'rgba(0,74,137,0.09)', title: 'System Notice' };
+
+                let desc = '';
+                if (n.type === 'request') {
+                    desc = `<b>${n.fromName}</b> has requested you to cover their <b>${n.data.subject}</b> class on <b>${n.data.day}</b> (Period ${n.data.period}).`;
+                } else if (n.type === 'hod_request') {
+                    desc = `<b>${n.fromName}</b> wants to cover <b>${n.data.fromName}'s</b> class (<b>${n.data.subject}</b> for ${n.data.section}, Year ${n.data.year} on ${n.data.day}, P${n.data.period}). Requires your approval.`;
+                } else if (n.type === 'approval') {
+                    desc = `<b>${n.fromName}</b> <b style="color:#059669">accepted</b> your takeover request for ${n.data.msg}.`;
+                } else if (n.type === 'rejection') {
+                    desc = `<b>${n.fromName}</b> <b style="color:#dc2626">declined</b> your takeover request for ${n.data.msg}.`;
+                } else {
+                    desc = n.data.msg || 'System Notice';
+                }
+
+                const actions = ((n.type === 'request' || n.type === 'hod_request') && !n.read) ? `
+                    <div class="notif-actions">
+                        <button class="btn-accept" onclick="event.stopPropagation(); acceptRequest(${n.id})">
+                            <i class="fas fa-check"></i> ${currentUser.role === 'hod' ? 'Approve' : 'Accept'}
+                        </button>
+                        <button class="btn-decline" onclick="event.stopPropagation(); rejectRequest(${n.id})">
+                            ${currentUser.role === 'hod' ? 'Reject' : 'Decline'}
+                        </button>
+                    </div>` : '';
+
+                const timeStr = formatNotifTime(n.timestamp);
+                const delay = i * 0.04;
+
+                return `
+                    <div class="notif-item reveal ${!n.read ? 'unread' : ''}"
+                         style="animation-delay: ${delay}s"
+                         onclick="if(${!n.read}) { (async() => { await db.markAsRead(${n.id}); await loadNotifications(); await updateNotificationBadge('${currentUser.id}'); })() }">
+                        <div class="notif-icon-box" style="background: ${cfg.bg}; color: ${cfg.color};">
+                            <i class="fas ${cfg.icon}"></i>
+                        </div>
+                        <div class="notif-body">
+                            <div class="notif-header">
+                                <div class="notif-title">${cfg.title}</div>
+                                <div class="notif-time"><i class="fas fa-clock" style="margin-right:3px; opacity:0.6;"></i>${timeStr}</div>
+                            </div>
+                            <div class="notif-desc">${desc}</div>
+                            ${actions}
+                        </div>
+                        ${!n.read ? '<div class="unread-dot"></div>' : ''}
+                    </div>`;
+            }).join('');
+        }
+
+        function formatNotifTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = (now - date) / 1000;
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        }
+
+        async function acceptRequest(notifId) {
+            try {
+                const currentUser = await db.getCurrentUser();
+                const notifs = await db.getNotifications(currentUser.id);
+                const n = notifs.find(x => x.id === notifId);
+                if (!n) return;
+
+                const data = n.data || {};
+
+                if (currentUser.role === 'hod') {
+                    // HOD Final Approval [BUG 3 FIX]
+                    const facultyAId = data.facultyA;
+                    const facultyBId = data.facultyB;
+
+                    if (!facultyAId || !facultyBId) {
+                        showToast('Notification data is malformed. Cannot process approval.', 'error');
+                        return;
+                    }
+
+                    const facultyA = await db.getProfile(facultyAId);
+                    const facultyB = await db.getProfile(facultyBId);
+
+                    // 1. Mark as Substituted in Faculty A (Requester)
+                    if (facultyA && facultyA.timetable && facultyA.timetable[data.cellId]) {
+                        facultyA.timetable[data.cellId].isSubstituted = true;
+                        facultyA.timetable[data.cellId].substituteName = facultyB ? facultyB.name : 'Unknown';
+                        await db.saveProfile(facultyAId, facultyA);
+                    }
+
+                    await db.markAsRead(notifId);
+
+                    // Notify both
+                    await db.sendNotification(facultyAId, currentUser.id, 'approval', {
+                        msg: `${data.subject || 'Class'} on ${data.day || ''} (P${data.period || ''}) approved by HOD.`
+                    });
+                    await db.sendNotification(facultyBId, currentUser.id, 'approval', {
+                        msg: `Your takeover of ${data.subject || 'Class'} was approved by HOD.`
+                    });
+
+                    showToast('Request finalized and timetable updated!', 'success');
+                } else {
+                    // Faculty Initial Approval -> Send to HOD
+                    const faculties = await db.getAllFaculties();
+                    const hod = faculties.find(f => f.role === 'hod' && f.dept === currentUser.dept);
+
+                    if (!hod) {
+                        showToast('HOD not found for your department. Approval failed.', 'error');
+                        return;
+                    }
+
+                    if (!data.cellId) {
+                        showToast('Invalid substitution data.', 'error');
+                        return;
+                    }
+
+                    await db.sendNotification(hod.id, currentUser.id, 'hod_request', {
+                        facultyA: n.from,
+                        facultyB: currentUser.id,
+                        cellId: data.cellId,
+                        subject: data.subject,
+                        section: data.section,
+                        year: data.year,
+                        day: data.day,
+                        period: data.period,
+                        fromName: n.fromName
+                    });
+
+                    await db.markAsRead(notifId);
+                    showToast('Accepted! Awaiting HOD final approval.', 'info');
+                }
+
+                await loadNotifications();
+                if (window.updateNotificationBadge) await updateNotificationBadge(currentUser.id);
+            } catch (err) {
+                console.error("Accept error:", err);
+                showToast("An error occurred while processing the request.", "error");
+            }
+        }
+
+        async function rejectRequest(notifId) {
+            try {
+                const currentUser = await db.getCurrentUser();
+                const notifs = await db.getNotifications(currentUser.id);
+                const n = notifs.find(x => x.id === notifId);
+                if (!n) return;
+
+                const data = n.data || {};
+                await db.markAsRead(notifId);
+
+                if (currentUser.role === 'hod') {
+                    // HOD Rejection
+                    if (data.facultyA) {
+                        await db.sendNotification(data.facultyA, currentUser.id, 'rejection', {
+                            msg: `${data.subject || 'Class'} on ${data.day || ''} (P${data.period || ''}) [HOD Rejected]`
+                        });
+                    }
+                    if (data.facultyB) {
+                        await db.sendNotification(data.facultyB, currentUser.id, 'rejection', {
+                            msg: `HOD rejected your takeover of ${data.subject || 'Class'}.`
+                        });
+                    }
+                    showToast('Request rejected by HOD.', 'warning');
+                } else {
+                    // Faculty Rejection
+                    await db.sendNotification(n.from, currentUser.id, 'rejection', {
+                        msg: `${data.subject || 'Class'} on ${data.day || ''} (P${data.period || ''})`
+                    });
+                    showToast('Request declined.', 'warning');
+                }
+
+                await loadNotifications();
+                if (window.updateNotificationBadge) await updateNotificationBadge(currentUser.id);
+            } catch (err) {
+                console.error("Reject error:", err);
+                showToast("An error occurred while rejecting the request.", "error");
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - FacultySync</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/db.js"></script>
+    <script src="js/common.js"></script>
+    <style>
+        /* Hide browser's native password reveal icon (Edge/Chrome) */
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear,
+        input[type="password"]::-webkit-contacts-auto-fill-button,
+        input[type="password"]::-webkit-credentials-auto-fill-button {
+            display: none !important;
+            visibility: hidden;
+        }
+
+        .tt-header {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 120px;
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border-medium);
+            border-right: 1px solid var(--border-medium);
+        }
+
+        .tt-break {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            background: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 120px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-medium);
+            border-right: 1px solid var(--border-medium);
+        }
+
+        .period-cell {
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 0.125rem;
+            text-align: center;
+            padding: 0.75rem 0.5rem;
+            font-size: 0.8125rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-medium);
+            border-right: 1px solid var(--border-medium);
+            background: white;
+            transition: all 0.15s;
+        }
+
+        .period-cell:hover {
+            border-color: var(--primary-accent);
+            background: var(--primary-light);
+            border-style: solid;
+        }
+
+        .period-cell.readonly {
+            cursor: default !important;
+        }
+
+        .period-cell.readonly:hover {
+            border-color: var(--border-medium);
+            background: white;
+            border-style: dashed;
+        }
+
+        /* Crisp SVG Success Animation */
+        .success-animation {
+            margin: 20px auto;
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 4;
+            stroke: #4CAF50;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px #4CAF50;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+            position: relative;
+            top: 5px;
+            right: 5px;
+            margin: 0 auto;
+        }
+
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 4;
+            stroke-miterlimit: 10;
+            stroke: #4CAF50;
+            fill: #fff;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            stroke: #fff;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes scale {
+
+            0%,
+            100% {
+                transform: none;
+            }
+
+            50% {
+                transform: scale3d(1.1, 1.1, 1);
+            }
+        }
+
+        @keyframes fill {
+            100% {
+                box-shadow: inset 0px 0px 0px 40px #4CAF50;
+            }
+        }
+
+        .remove-photo-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 30;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .remove-photo-btn:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .photo-preview-container.editable:hover .remove-photo-btn.has-photo {
+            display: flex;
+        }
+
+        .success-checkmark .check-icon .icon-fix {
+            top: 8px;
+            width: 5px;
+            left: 28px;
+            z-index: 10;
+            height: 85px;
+            position: absolute;
+            transform: rotate(-45deg);
+            background-color: #FFFFFF;
+        }
+
+        @keyframes rotate-circle {
+            0% {
+                transform: rotate(-45deg);
+            }
+
+            5% {
+                transform: rotate(-45deg);
+            }
+
+            12% {
+                transform: rotate(-405deg);
+            }
+
+            100% {
+                transform: rotate(-405deg);
+            }
+        }
+
+        @keyframes icon-line-tip {
+            0% {
+                width: 0;
+                left: 1px;
+                top: 19px;
+            }
+
+            54% {
+                width: 0;
+                left: 1px;
+                top: 19px;
+            }
+
+            70% {
+                width: 50px;
+                left: -8px;
+                top: 37px;
+            }
+
+            84% {
+                width: 17px;
+                left: 21px;
+                top: 48px;
+            }
+
+            100% {
+                width: 25px;
+                left: 14px;
+                top: 46px;
+            }
+        }
+
+        @keyframes icon-line-long {
+            0% {
+                width: 0;
+                right: 46px;
+                top: 54px;
+            }
+
+            65% {
+                width: 0;
+                right: 46px;
+                top: 54px;
+            }
+
+            84% {
+                width: 55px;
+                right: 0px;
+                top: 35px;
+            }
+
+            100% {
+                width: 47px;
+                right: 8px;
+                top: 38px;
+            }
+        }
+
+        .period-cell.active {
+            background: white;
+            border: 1px solid var(--primary-accent);
+            box-shadow: inset 0 0 0 1px var(--primary-accent);
+        }
+
+        .period-cell.substituted {
+            border-color: var(--warning);
+            background: #fffbeb;
+            box-shadow: inset 0 0 0 1px var(--warning);
+        }
+
+        .period-cell.substituted .cell-room {
+            background: #fef3c7;
+            color: var(--warning);
+        }
+
+        .cell-subject {
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 0.75rem;
+            line-height: 1.1;
+            margin-bottom: 0.25rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .cell-room {
+            font-size: 0.65rem;
+            color: var(--primary-accent);
+            background: var(--primary-light);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .cell-section {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-bottom: 0.125rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 0;
+            min-width: 1100px;
+            border-top: 1px solid var(--border-medium);
+            border-left: 1px solid var(--border-medium);
+            background: white;
+        }
+
+        .day-label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 120px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: var(--text-main);
+            background: #f8fafc;
+            border-bottom: 1px solid var(--border-medium);
+            border-right: 1px solid var(--border-medium);
+        }
+
+        /* Multi-select chips */
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            min-height: 20px;
+        }
+
+        .tag-chip {
+            background: var(--primary-light);
+            color: var(--primary-600);
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid var(--primary-200);
+            transition: all 0.2s;
+        }
+
+        .tag-chip:hover {
+            background: var(--primary-200);
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--primary-400);
+        }
+
+        .tag-remove:hover {
+            color: var(--danger);
+        }
+
+        /* Segmented Control Styling */
+        .segmented-control {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: var(--radius-md);
+            gap: 4px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .segment-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .segment-btn i {
+            font-size: 0.9rem;
+        }
+
+        .segment-btn.active {
+            background: white;
+            color: var(--primary-main);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .segment-btn:hover:not(.active) {
+            background: rgba(0, 0, 0, 0.03);
+            color: var(--text-main);
+        }
+
+        /* Enhanced Modal Input Styling */
+        .modal-content .form-label {
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.625rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+        }
+
+        .modal-content .form-label i {
+            font-size: 0.8rem;
+            color: var(--primary-main);
+            opacity: 0.8;
+        }
+
+        .details-group-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .modal-content .form-input {
+            border: 1px solid var(--border-medium);
+            padding: 0.75rem 1rem;
+            background-color: white;
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            border-radius: var(--radius-md);
+        }
+
+        .segmented-control {
+            display: flex;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: var(--radius-lg);
+            gap: 4px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-light);
+        }
+
+        .segment-btn.active {
+            background: white;
+            color: var(--primary-main);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: scale(1.02);
+        }
+
+        .modal-content .form-input:focus {
+            background: white;
+            border-color: var(--primary-main);
+            box-shadow: 0 0 0 4px rgba(0, 74, 137, 0.1);
+        }
+
+        /* Custom Select Component */
+        .custom-select-wrapper {
+            position: relative;
+            user-select: none;
+        }
+
+        .custom-select-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: white;
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .custom-select-trigger:hover {
+            border-color: var(--primary-main);
+        }
+
+        .custom-select-trigger i.arrow {
+            transition: transform 0.3s;
+            color: var(--text-muted);
+        }
+
+        .custom-select-wrapper.open .custom-select-trigger i.arrow {
+            transform: rotate(180deg);
+        }
+
+        .custom-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid var(--border-medium);
+            border-radius: var(--radius-md);
+            margin-top: 5px;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+            padding: 0;
+            /* Remove general padding */
+        }
+
+        .custom-select-wrapper.open .custom-options {
+            display: block;
+            animation: slideDownCustom 0.2s ease-out;
+        }
+
+        @keyframes slideDownCustom {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .custom-option {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .custom-option:hover {
+            background: var(--primary-light);
+            color: var(--primary-main);
+            padding-left: 1.25rem;
+        }
+
+        .custom-option.selected {
+            background: var(--primary-main);
+            color: white;
+        }
+
+        .custom-option i {
+            width: 16px;
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        .select-search-container {
+            padding: 10px;
+            border-bottom: 2px solid #f1f5f9;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 20;
+            border-top-left-radius: var(--radius-md);
+            border-top-right-radius: var(--radius-md);
+        }
+
+        #customSubjectOptionsList,
+        #customSectionOptionsList {
+            padding: 5px;
+        }
+
+        .select-search {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            outline: none;
+        }
+
+        .select-search:focus {
+            border-color: var(--primary-main);
+        }
+
+        /* Enhanced Photo Upload UI */
+        .photo-preview-container {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            border-radius: var(--radius-lg);
+            border: 2px solid var(--border-light);
+            overflow: hidden;
+            background: #f8fafc;
+            margin-bottom: 1rem;
+            cursor: default;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .photo-preview-container.editable {
+            cursor: pointer;
+        }
+
+        .photo-preview-container.editable:hover {
+            border-color: var(--primary-main);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .photo-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 74, 137, 0.7);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            opacity: 0;
+            transition: all 0.3s ease;
+            font-size: 0.75rem;
+            font-weight: 600;
+            backdrop-filter: blur(2px);
+        }
+
+        .photo-preview-container.editable:hover .photo-overlay {
+            opacity: 1;
+        }
+
+        .photo-overlay i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .photo-status-tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: 50px;
+            background: #f1f5f9;
+            color: var(--text-muted);
+            width: fit-content;
+            margin: 0 auto;
+        }
+
+        .pulse {
+            animation: pulse-button 2s infinite;
+            background: #d97706 !important;
+            border-color: #b45309 !important;
+        }
+
+        @keyframes pulse-button {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(217, 119, 6, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <nav class="navbar">
+        <div class="navbar-left">
+            <img src="college_banner.png" class="nav-institutional-logo" alt="MKCE Logo">
+        </div>
+        <div class="navbar-center">
+            <a href="dashboard.html" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="leave-history.html" class="nav-link"><i class="fas fa-history"></i> Leave History</a>
+            <a href="directory.html" class="nav-link"><i class="fas fa-address-book"></i> Profiles</a>
+        </div>
+        <div class="navbar-right">
+            <div class="nav-year-tag">2025-2026</div>
+            <a href="notifications.html" class="nav-notif-link" title="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notif-badge" style="display: none;">0</span>
+            </a>
+            <div class="profile-dropdown-container">
+                <div class="profile-pill" id="profilePill">
+                    <div class="profile-info">
+                        <span class="profile-name" id="user-nav-name">...</span>
+                        <span class="profile-role" id="user-nav-role">Faculty</span>
+                    </div>
+                    <div class="profile-avatar" id="user-nav-avatar">?</div>
+                </div>
+                <div class="profile-dropdown-menu" id="profileMenu">
+                    <a href="details.html" class="active"><i class="fas fa-user-circle"></i> Profile</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-top: 8rem;">
+            <h1 style="font-size: 1.5rem; font-weight: 600; color: #0f172a; margin-bottom: 0.25rem;">Profile</h1>
+            <p style="color: #64748b; font-size: 0.875rem;">Manage your personal information and weekly schedule.</p>
+        </div>
+
+        <div id="readOnlyBanner" class="reveal" style="display: none; background: #fefce8; border: 1px solid #fef08a; padding: 0.75rem 1rem; border-radius: var(--radius-md); margin-bottom: 2rem; align-items: center; gap: 0.75rem; color: #854d0e;">
+            <i class="fas fa-info-circle"></i>
+            <span style="font-size: 0.875rem; font-weight: 500;">Your profile is managed by the administrator. Contact HR or the Admin office for any corrections.</span>
+        </div>
+
+        <form id="profileForm">
+            <section class="card" style="margin-bottom: 2rem;">
+                <h3
+                    style="font-size: 0.875rem; font-weight: 700; color: #475569; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem;">
+                    Personal Details
+                </h3>
+                <div style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+                    <!-- Photo Display Section -->
+                    <div style="flex: 0 0 160px; text-align: center;">
+                        <div id="photo-preview-container" class="photo-preview-container" onclick="handlePhotoClick()">
+                            <div id="photo-preview"
+                                style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-user-circle" style="font-size: 3.5rem; color: #cbd5e1;"></i>
+                            </div>
+                            <div id="photo-overlay" class="photo-overlay">
+                                <i class="fas fa-camera"></i>
+                                <span>Change Photo</span>
+                            </div>
+                            <button type="button" id="remove-photo-btn" class="remove-photo-btn"
+                                onclick="removePhoto(event)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <input type="file" id="photo-input" hidden accept="image/*" onchange="previewPhoto(this)">
+                        <div id="photo-status-tag" class="photo-status-tag">
+                            <i class="fas fa-camera"></i> Profile Photo
+                        </div>
+                    </div>
+
+                    <!-- Details Form -->
+                    <div
+                        style="flex: 1; min-width: 300px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-user"
+                                    style="position: absolute; left: 0.875rem; top: 1rem; font-size: 0.875rem; color: var(--text-muted);"></i>
+                                <input type="text" id="full-name" class="form-input"
+                                    style="padding-left: 2.5rem; background: #f8fafc; cursor: not-allowed;" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Designation</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-id-badge"
+                                    style="position: absolute; left: 0.875rem; top: 1rem; font-size: 0.875rem; color: var(--text-muted);"></i>
+                                <input type="text" id="designation" class="form-input"
+                                    style="padding-left: 2.5rem; background: #f8fafc; cursor: not-allowed;" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-envelope"
+                                    style="position: absolute; left: 0.875rem; top: 1rem; font-size: 0.875rem; color: var(--text-muted);"></i>
+                                <input type="email" id="email" class="form-input"
+                                    style="padding-left: 2.5rem; background: #f8fafc; cursor: not-allowed;" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-phone"
+                                    style="position: absolute; left: 0.875rem; top: 1rem; font-size: 0.875rem; color: var(--text-muted);"></i>
+                                <input type="tel" id="phoneNumber" class="form-input"
+                                    style="padding-left: 2.5rem; background: #f8fafc; cursor: not-allowed;" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Department</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-building"
+                                    style="position: absolute; left: 0.875rem; top: 1rem; font-size: 0.875rem; color: var(--text-muted);"></i>
+                                <input type="text" id="department" class="form-input"
+                                    style="padding-left: 2.5rem; background: #f8fafc; cursor: not-allowed;" readonly>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Account Password</label>
+                            <div style="position: relative;">
+                                <i class="fas fa-lock"
+                                    style="position: absolute; left: 0.875rem; top: 1rem; font-size: 0.875rem; color: var(--text-muted);"></i>
+                                <input type="password" id="account-password" class="form-input"
+                                    style="padding-left: 2.5rem; padding-right: 2.5rem; background: #f8fafc; cursor: not-allowed;"
+                                    readonly>
+                                <i class="fas fa-eye" id="togglePassword"
+                                    style="position: absolute; right: 0.875rem; top: 1rem; font-size: 0.875rem; color: var(--text-muted); cursor: pointer;"></i>
+                            </div>
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label class="form-label" style="display: flex; justify-content: space-between;">
+                                Subject Handling
+                                <span style="font-size: 0.65rem; color: var(--text-muted);">Synced from timetable</span>
+                            </label>
+                            <input type="hidden" id="subject-handling">
+                            <div id="subject-tags" class="tags-container" style="margin-top: 0.25rem;"></div>
+                        </div>
+                        <div class="form-group" style="grid-column: 1 / -1;">
+                            <label class="form-label" style="display: flex; justify-content: space-between;">
+                                Class Handling
+                                <span style="font-size: 0.65rem; color: var(--text-muted);">Synced from
+                                    timetable</span>
+                            </label>
+                            <input type="hidden" id="class-handling">
+                            <div id="class-tags" class="tags-container" style="margin-top: 0.25rem;"></div>
+                        </div>
+
+                        <script>
+                            document.getElementById('togglePassword').addEventListener('click', function () {
+                                const passInput = document.getElementById('account-password');
+                                if (passInput.type === 'password') {
+                                    passInput.type = 'text';
+                                    this.classList.replace('fa-eye', 'fa-eye-slash');
+                                } else {
+                                    passInput.type = 'password';
+                                    this.classList.replace('fa-eye-slash', 'fa-eye');
+                                }
+                            });
+                        </script>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card">
+                <h3
+                    style="font-size: 0.875rem; font-weight: 700; color: #475569; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem;">
+                    Weekly Timetable
+                </h3>
+                <div style="overflow-x: auto; padding-bottom: 1rem;">
+                    <div id="timetable-body" class="grid-container">
+                        <div class="day-label" style="color: var(--primary-600);">Day</div>
+                        <div class="tt-header">I<br>8:45-9:45</div>
+                        <div class="tt-header">II<br>9:45-10:45</div>
+                        <div class="tt-header">Break</div>
+                        <div class="tt-header">III<br>11:05-12:05</div>
+                        <div class="tt-header">IV<br>12:05-12:55</div>
+                        <div class="tt-header">Lunch</div>
+                        <div class="tt-header">V<br>1:45-2:45</div>
+                        <div class="tt-header">Break</div>
+                        <div class="tt-header">VI<br>3:00-3:50</div>
+                        <div class="tt-header">VII<br>3:50-4:40</div>
+                    </div>
+                </div>
+                <div style="margin-top: 2rem; display: flex; justify-content: flex-end; align-items: center; gap: 1rem;">
+                    <span id="unsaved-indicator" style="display: none; color: #d97706; font-size: 0.85rem; font-weight: 600;">
+                        <i class="fas fa-exclamation-circle"></i> Unsaved changes
+                    </span>
+                    <button type="button" class="btn btn-primary" id="saveBtn" onclick="saveEverything()"
+                        style="padding: 0.75rem 2rem; display: none; transition: transform 0.2s;">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </section>
+        </form>
+    </main>
+
+    <div class="modal-overlay" id="classModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 1.5rem;">Period Details</h3>
+            <p id="modalPeriodInfo" style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;"></p>
+            <form id="classForm" onsubmit="event.preventDefault(); saveClassDetails();">
+                <input type="hidden" id="selectedCellId">
+                <div class="form-group">
+
+                    <input type="hidden" id="classType" value="Free">
+                    <div class="segmented-control">
+                        <button type="button" class="segment-btn active" id="type-free"
+                            onclick="setAssignmentType('Free')">
+                            <i class="fas fa-coffee"></i> Free Period
+                        </button>
+                        <button type="button" class="segment-btn" id="type-class" onclick="setAssignmentType('Class')">
+                            <i class="fas fa-chalkboard-teacher"></i> Class / Lab
+                        </button>
+                    </div>
+                </div>
+                <div id="detailsInputs" class="details-group-box" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label"><i class="fas fa-calendar-alt"></i> Year</label>
+                            <input type="hidden" id="year" value="1">
+                            <div class="custom-select-wrapper" id="customYearSelect">
+                                <div class="custom-select-trigger">
+                                    <span id="selectedYearLabel">1st Year</span>
+                                    <i class="fas fa-chevron-down arrow"></i>
+                                </div>
+                                <div class="custom-options">
+                                    <div class="custom-option" onclick="selectCustomYear('1', '1st Year')">1st Year
+                                    </div>
+                                    <div class="custom-option" onclick="selectCustomYear('2', '2nd Year')">2nd Year
+                                    </div>
+                                    <div class="custom-option" onclick="selectCustomYear('3', '3rd Year')">3rd Year
+                                    </div>
+                                    <div class="custom-option" onclick="selectCustomYear('4', '4th Year')">4th Year
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label"><i class="fas fa-users"></i> Section</label>
+                            <input type="hidden" id="section" value="">
+                            <div class="custom-select-wrapper" id="customSectionSelect">
+                                <div class="custom-select-trigger">
+                                    <span id="selectedSectionLabel">Select Section</span>
+                                    <i class="fas fa-chevron-down arrow"></i>
+                                </div>
+                                <div class="custom-options">
+                                    <div id="customSectionOptionsList">
+                                        <!-- Dynamic -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin: 1.25rem 0 0 0;">
+                        <label class="form-label"><i class="fas fa-book-open"></i> Subject</label>
+                        <input type="hidden" id="subject" value="">
+                        <div class="custom-select-wrapper" id="customSubjectSelect">
+                            <div class="custom-select-trigger">
+                                <span id="selectedSubjectLabel">Select Subject</span>
+                                <i class="fas fa-chevron-down arrow"></i>
+                            </div>
+                            <div class="custom-options">
+                                <div class="select-search-container">
+                                    <input type="text" class="select-search" placeholder="Search subject..."
+                                        id="subjectSearch">
+                                </div>
+                                <div id="customSubjectOptionsList">
+                                    <!-- Dynamic -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Multi-section selection for Electives -->
+                    <div id="multiSectionContainer" style="display: none; margin-top: 1rem;">
+                        <label class="form-label">Select All Applicable Sections</label>
+                        <div id="sectionCheckboxes"
+                            style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; background: var(--bg-main); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-light);">
+                            <!-- Dynamic -->
+                        </div>
+                    </div>
+
+                    <!-- Batch selection for Labs -->
+                    <div id="batchSelectionContainer" style="display: none; margin-top: 1rem;">
+                        <label class="form-label">Select Batch</label>
+                        <select id="batchSelect" class="form-input">
+                            <option value="none">Combined (All Batches)</option>
+                            <option value="Batch 1">Batch 1</option>
+                            <option value="Batch 2">Batch 2</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary w-full" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary w-full">Save Details</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="successModal" style="z-index: 5000;">
+        <div class="modal-content" style="max-width: 350px; text-align: center; padding: 3rem 2rem;">
+            <div class="success-animation">
+                <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
+                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"
+                        style="stroke: #4CAF50;" />
+                </svg>
+            </div>
+            <h3 style="margin-top: 2rem; color: var(--text-main);">Profile Updated!</h3>
+            <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.5rem;">Your changes have been
+                saved successfully.</p>
+        </div>
+    </div>
+
+    <script>
+        const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+        const times = ['8:45-9:45', '9:45-10:45', '10:45-11:05', '11:05-12:05', '12:05-12:55', '12:55-1:45', '1:45-2:45', '2:45-3:00', '3:00-3:50', '3:50-4:40'];
+        const structure = [1, 1, 0, 1, 1, 0, 1, 0, 1, 1];
+        let timetableData = {};
+
+        let targetUserId = null;
+        let uploadedPhotoBase64 = null;
+        let currentCellId = null;
+        let lastUsedYear = '1';
+
+        const SUBJECTS_BY_YEAR = {
+            '1-ECE': ['Engineering Mathematics II', 'Engineering Mathematics II Lab', 'Engineering Physics', 'Engineering Physics Lab', 'Data Structure', 'Data Structure Project', 'Career Skill Development I', 'Counselling'],
+            '1-VLSI': ['Engineering Mathematics II', 'Engineering Mathematics II Lab', 'Engineering Physics', 'Engineering Physics Lab', 'Data Structure', 'Data Structure Project', 'Career Skill Development I', 'Counselling'],
+            '2-ECE': ['Analog and Digital Communication', 'Transmission Lines & Waveguide', 'Microcontrollers & Interfacing', 'Digital Signal Processing', 'Business Communication', 'Career Skill Development III', 'Library', 'Counselling'],
+            '2-VLSI': ['Business Communication', 'Career Skill Development III', 'Library', 'VLSI System Design', 'ASIC Design', 'Digital Signal Processing', 'Computer Architecture and Organization', 'Microcontrollers & Embedded System', 'Counselling'],
+            '3-ECE': ['Wireless Communication', 'Antenna & Millimetrewave Communication', 'Microwave & Optical Communication', 'Renewable Energy Source', 'Library', 'Comprehension', 'Design Project', 'Counselling'],
+            '3-VLSI': ['Wireless Communication', 'Antenna & Millimetrewave Communication', 'Microwave & Optical Communication', 'Renewable Energy Source', 'Library', 'Comprehension', 'Design Project', 'Counselling'],
+            '4-ECE': ['VLSI Design', 'Wireless Communication', 'Embedded Systems', 'Machine Learning'],
+            '4-VLSI': ['VLSI Design', 'Wireless Communication', 'Embedded Systems', 'Machine Learning']
+        };
+
+        const SECTIONS_BY_YEAR = {
+            '1': ['ECE-A', 'ECE-B', 'ECE-C', 'ECE-D', 'ECE-E', 'VLSI'],
+            '2': ['ECE-A', 'ECE-B', 'ECE-C', 'ECE-D', 'VLSI'],
+            '3': ['ECE-A', 'ECE-B', 'ECE-C', 'ECE-D', 'VLSI'],
+            '4': ['ECE-A', 'ECE-B', 'ECE-C', 'ECE-D', 'VLSI']
+        };
+
+        const modal = document.getElementById('classModal');
+
+        async function init() {
+            const currentUser = await db.getCurrentUser();
+            if (!currentUser) { window.location.href = 'index.html'; return; }
+
+            // Fetch dynamic curriculum
+            const curriculum = await db.getCurriculum();
+            if (curriculum && Object.keys(curriculum).length > 0) {
+                Object.assign(SUBJECTS_BY_YEAR, curriculum);
+            }
+
+            // Fetch dynamic sections
+            const sections = await db.getSections();
+            if (sections && Object.keys(sections).length > 0) {
+                Object.assign(SECTIONS_BY_YEAR, sections);
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryId = urlParams.get('id');
+
+            // If admin is viewing someone else or themselves via ID
+            const isAdmin = currentUser.role === 'admin';
+            targetUserId = (isAdmin && queryId) ? queryId : currentUser.id;
+
+            const saved = await db.getProfile(targetUserId);
+            if (!saved) return;
+
+            // Handle Read-Only vs Editable mode [BUG 12 FIX]
+            // Only admins can edit profiles. Faculty view their own profile in read-only mode.
+            const isEditable = isAdmin; 
+            
+            if (isAdmin) {
+                document.getElementById('saveBtn').style.display = 'inline-flex';
+            } else {
+                document.getElementById('readOnlyBanner').style.display = 'flex';
+            }
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (isAdmin) {
+                    el.readOnly = false;
+                    el.style.background = 'white';
+                    el.style.cursor = 'text';
+                } else {
+                    el.readOnly = true;
+                    el.style.background = '#f8fafc';
+                    el.style.cursor = 'not-allowed';
+                }
+            });
+
+            // Handling search inputs are removed, so no need to disable them
+            // They are now purely automatic labels and tags.
+
+            if (isAdmin || targetUserId === currentUser.id) {
+                document.getElementById('saveBtn').style.display = 'inline-flex';
+            }
+
+            // Profile section updates
+            document.getElementById('full-name').value = saved.name || '';
+            document.getElementById('designation').value = saved.desig || '';
+            document.getElementById('email').value = saved.id || '';
+            document.getElementById('phoneNumber').value = saved.phone || '';
+            document.getElementById('department').value = saved.dept || '';
+
+            // Initial multi-select values will be synced from timetable automatically below
+            document.getElementById('subject-handling').value = '';
+            document.getElementById('class-handling').value = '';
+
+            document.getElementById('account-password').value = '';
+            document.getElementById('account-password').placeholder = '••••••••';
+
+            // Profile photo update
+            if (saved.photo) {
+                uploadedPhotoBase64 = saved.photo;
+                document.getElementById('photo-preview').innerHTML = `<img src="${saved.photo}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                document.getElementById('remove-photo-btn').classList.add('has-photo');
+            }
+
+            // Update Photo Upload UI visibility based on isEditable
+            if (isEditable) {
+                document.getElementById('photo-preview-container').classList.add('editable');
+                const statusTag = document.getElementById('photo-status-tag');
+                statusTag.classList.add('active');
+                statusTag.innerHTML = '<i class="fas fa-camera"></i> Update Photo';
+            } else {
+                document.getElementById('photo-preview-container').classList.remove('editable');
+                document.getElementById('photo-overlay').style.display = 'none';
+                document.getElementById('remove-photo-btn').style.display = 'none';
+                const statusTag = document.getElementById('photo-status-tag');
+                statusTag.innerHTML = '<i class="fas fa-lock"></i> Profile Photo';
+            }
+
+            window.handlePhotoClick = () => {
+                if (isEditable) document.getElementById('photo-input').click();
+            };
+
+            window.removePhoto = (e) => {
+                e.stopPropagation();
+                if (!confirm('Are you sure you want to remove your profile photo?')) return;
+                uploadedPhotoBase64 = null;
+                document.getElementById('photo-preview').innerHTML = `<i class="fas fa-user-circle" style="font-size: 3.5rem; color: #cbd5e1;"></i>`;
+                document.getElementById('remove-photo-btn').classList.remove('has-photo');
+            };
+
+            timetableData = saved.timetable || {};
+
+            const container = document.getElementById('timetable-body');
+            days.forEach((day, dIdx) => {
+                const dayLabel = document.createElement('div');
+                dayLabel.className = 'day-label';
+                dayLabel.innerText = day;
+                container.appendChild(dayLabel);
+
+                let p = 1;
+                structure.forEach((type, sIdx) => {
+                    const cell = document.createElement('div');
+                    cell.style.animationDelay = `${(dIdx * 0.05) + (sIdx * 0.02)}s`;
+                    if (type === 0) {
+                        cell.className = 'tt-break reveal';
+                        cell.innerText = sIdx === 2 ? 'BREAK' : sIdx === 5 ? 'LUNCH' : 'BREAK';
+                    } else {
+                        cell.className = 'period-cell reveal';
+                        const cId = `cell-${dIdx}-${p}`;
+                        cell.id = cId;
+                        if (timetableData[cId]) renderCell(cell, timetableData[cId]);
+                        else cell.innerHTML = '<span style="color: #cbd5e1; font-size: 0.75rem;">Empty</span>';
+                        const currentP = p;
+                        if (isEditable) {
+                            cell.onclick = () => openModal(cId, day, currentP, times[sIdx]);
+                        } else {
+                            cell.classList.add('readonly');
+                        }
+                        p++;
+                    }
+                    container.appendChild(cell);
+                });
+            });
+
+            // Sync handling tags after loading the timetable
+            syncHandlingFromTimetable();
+        }
+
+        function renderCell(cell, data) {
+            cell.classList.add('active');
+            if (data.isSubstituted) {
+                cell.classList.add('substituted');
+            }
+            let displaySection = data.section;
+            if (data.isElective) {
+                displaySection = Array.isArray(data.sections) ? data.sections.join(', ') : (data.section || 'All');
+            }
+            if (data.batch && data.batch !== 'none') {
+                displaySection += ` (${data.batch})`;
+            }
+
+            cell.innerHTML = `
+                <div class="cell-subject">${data.subject}</div>
+                ${data.isCounselling ? '' : (displaySection ? `<div class="cell-section" title="${displaySection}">${displaySection}</div>` : '')}
+                ${data.isSubstituted ?
+                    `<div class="cell-room" style="background:#fef3c7; color:#d97706; font-size:0.65rem;">SUBSTITUTED</div>` :
+                    (data.isCounselling ? `<div class="cell-room">Counselling</div>` : (data.year ? `<div class="cell-room">Year ${data.year}</div>` : ''))
+                }
+                ${data.isSubstituted && data.substituteName ? `<div style="font-size: 0.6rem; color: #d97706; font-weight: 600; margin-top: 2px;">By: ${data.substituteName}</div>` : ''}
+            `;
+        }
+
+        function setAssignmentType(type) {
+            document.getElementById('classType').value = type;
+            document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+            if (type === 'Free') {
+                document.getElementById('type-free').classList.add('active');
+            } else {
+                document.getElementById('type-class').classList.add('active');
+            }
+            toggleInputs(type);
+        }
+
+        function openModal(cId, day, p, time) {
+            currentCellId = cId;
+            document.getElementById('modalPeriodInfo').innerText = `${day} | Period ${p} (${time})`;
+            const data = timetableData[cId];
+
+            if (data) {
+                setAssignmentType('Class');
+                const y = data.year || lastUsedYear;
+                const s = data.section || (SECTIONS_BY_YEAR[y] ? SECTIONS_BY_YEAR[y][0] : '');
+                document.getElementById('year').value = y;
+                updateSectionOptions(y, data.section);
+                updateSubjectOptions(y, data.subject, s);
+            } else {
+                setAssignmentType('Free');
+                document.getElementById('year').value = lastUsedYear;
+                const s = SECTIONS_BY_YEAR[lastUsedYear] ? SECTIONS_BY_YEAR[lastUsedYear][0] : '';
+                updateSectionOptions(lastUsedYear);
+                updateSubjectOptions(lastUsedYear, null, s);
+            }
+            modal.classList.add('active');
+        }
+        function closeModal() { modal.classList.remove('active'); }
+        function toggleInputs(v) { document.getElementById('detailsInputs').style.display = v === 'Class' ? 'block' : 'none'; }
+
+        // Unified Custom Select Manager
+        document.addEventListener('click', (e) => {
+            const wrapper = e.target.closest('.custom-select-wrapper');
+            const allWrappers = document.querySelectorAll('.custom-select-wrapper');
+
+            if (wrapper) {
+                // If clicking a trigger (not search/options)
+                if (e.target.closest('.custom-select-trigger')) {
+                    allWrappers.forEach(w => { if (w !== wrapper) w.classList.remove('open'); });
+                    wrapper.classList.toggle('open');
+                    const search = wrapper.querySelector('.select-search');
+                    if (search && wrapper.classList.contains('open')) {
+                        search.value = ''; search.focus();
+                    }
+                }
+            } else {
+                allWrappers.forEach(w => w.classList.remove('open'));
+            }
+        });
+
+        function selectCustomYear(val, label) {
+            document.getElementById('year').value = val;
+            document.getElementById('selectedYearLabel').innerText = label;
+            document.getElementById('customYearSelect').classList.remove('open');
+            updateSectionOptions(val);
+            // updateSubjectOptions is called inside updateSectionOptions
+        }
+
+        function updateSectionOptions(year, selectedSection = null) {
+            lastUsedYear = year;
+            const hiddenSection = document.getElementById('section');
+            const sections = SECTIONS_BY_YEAR[year] || [];
+            const list = document.getElementById('customSectionOptionsList');
+
+            list.innerHTML = sections.map(s => `
+                <div class="custom-option ${hiddenSection.value === s ? 'selected' : ''}" 
+                     onclick="selectCustomSection('${s}')">
+                    <span>${s}</span>
+                </div>
+            `).join('');
+
+            window.selectCustomSection = (s) => {
+                hiddenSection.value = s;
+                document.getElementById('selectedSectionLabel').innerText = s;
+                document.getElementById('customSectionSelect').classList.remove('open');
+                updateSubjectOptions(document.getElementById('year').value, null, s);
+            };
+
+            const defaultSection = selectedSection || (sections.includes(hiddenSection.value) ? hiddenSection.value : (sections[0] || ''));
+            selectCustomSection(defaultSection);
+        }
+
+        function updateSubjectOptions(year, selectedSubject = null, section = null) {
+            const hiddenInput = document.getElementById('subject');
+            if (!section) section = document.getElementById('section').value;
+
+            let key = year;
+            if (['1', '2', '3', '4'].includes(year)) {
+                const stream = (section && section.includes('VLSI')) ? 'VLSI' : 'ECE';
+                key = `${year}-${stream}`;
+            }
+
+            const subjects = SUBJECTS_BY_YEAR[key] || SUBJECTS_BY_YEAR[year] || [];
+            const subObjects = subjects.map(s => typeof s === 'string' ? { name: s, type: 'normal' } : s);
+            const listContainer = document.getElementById('customSubjectOptionsList');
+
+            const renderOptions = (filter = '') => {
+                const filtered = subObjects.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()));
+                listContainer.innerHTML = filtered.map(s => `
+                    <div class="custom-option ${hiddenInput.value === s.name ? 'selected' : ''}" 
+                         onclick="selectCustomSubject('${s.name}', '${s.type}')"
+                         data-name="${s.name}" data-type="${s.type}">
+                        <span>${s.name}</span>
+                    </div>
+                `).join('') || '<div class="custom-option" style="cursor: default; color: #94a3b8;">No results found</div>';
+            };
+
+            renderOptions();
+            document.getElementById('subjectSearch').oninput = (e) => renderOptions(e.target.value);
+
+            window.selectCustomSubject = (name, type) => {
+                hiddenInput.value = name;
+                document.getElementById('selectedSubjectLabel').innerText = name;
+                document.getElementById('customSubjectSelect').classList.remove('open');
+                handleSubjectChange(name, type);
+            };
+
+            const targetSub = selectedSubject || hiddenInput.value || (subObjects[0] ? subObjects[0].name : '');
+            const found = subObjects.find(s => s.name === targetSub);
+            if (found) selectCustomSubject(found.name, found.type);
+            else if (subObjects[0]) selectCustomSubject(subObjects[0].name, subObjects[0].type);
+        }
+
+        function handleSubjectChange(subjectName, forceType = null) {
+            const list = document.getElementById('customSubjectOptionsList');
+            const items = list.querySelectorAll('.custom-option');
+            let type = forceType;
+
+            if (!type) {
+                const found = Array.from(items).find(i => i.getAttribute('data-name') === subjectName);
+                type = found ? found.getAttribute('data-type') : 'normal';
+            }
+
+            const multiContainer = document.getElementById('multiSectionContainer');
+            const batchContainer = document.getElementById('batchSelectionContainer');
+            const singleSectionBox = document.getElementById('customSectionSelect').closest('.form-group');
+            const yearBox = document.getElementById('customYearSelect').closest('.form-group');
+
+            multiContainer.style.display = 'none';
+            batchContainer.style.display = 'none';
+            singleSectionBox.style.display = 'block';
+            yearBox.style.display = 'block';
+
+            // Hide Year and Section for Counselling
+            const isCounselling = subjectName.toLowerCase() === 'counselling';
+            if (isCounselling) {
+                yearBox.style.display = 'none';
+                singleSectionBox.style.display = 'none';
+            } else if (type === 'elective') {
+                multiContainer.style.display = 'block';
+                singleSectionBox.style.display = 'none';
+                loadMultiSectionCheckboxes();
+            } else if (type === 'batch') {
+                batchContainer.style.display = 'block';
+            }
+        }
+
+        function loadMultiSectionCheckboxes() {
+            const year = document.getElementById('year').value;
+            const container = document.getElementById('sectionCheckboxes');
+            const sections = SECTIONS_BY_YEAR[year] || [];
+
+            // If editing, check what's already selected
+            const data = timetableData[currentCellId];
+            const selectedSet = data && data.isElective && Array.isArray(data.sections) ? new Set(data.sections) : new Set();
+
+            container.innerHTML = sections.map(s => `
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem;">
+                    <input type="checkbox" name="elective-sections" value="${s}" ${selectedSet.has(s) ? 'checked' : ''}> ${s}
+                </label>
+            `).join('');
+        }
+
+        async function saveClassDetails() {
+            const cell = document.getElementById(currentCellId);
+            if (document.getElementById('classType').value === 'Free') {
+                delete timetableData[currentCellId];
+                cell.classList.remove('active');
+                cell.innerHTML = '<span style="color: #cbd5e1; font-size: 0.75rem;">Empty</span>';
+            } else {
+                const p = parseInt(currentCellId.split('-')[2]);
+                const mapping = { 1: 0, 2: 1, 3: 3, 4: 4, 5: 6, 6: 8, 7: 9 };
+                const subjectValue = document.getElementById('subject').value;
+                const list = document.getElementById('customSubjectOptionsList');
+                const selectedItem = list.querySelector(`.custom-option[data-name="${subjectValue}"]`);
+                const type = selectedItem ? selectedItem.getAttribute('data-type') : 'normal';
+
+                const isCounselling = subjectValue.toLowerCase() === 'counselling';
+
+                const data = {
+                    subject: subjectValue || 'Class',
+                    time: times[mapping[p]]
+                };
+
+                if (isCounselling) {
+                    // Counselling doesn't need year, section, or batch
+                    data.year = '';
+                    data.section = '';
+                    data.isCounselling = true;
+                } else {
+                    data.year = document.getElementById('year').value;
+                    if (type === 'elective') {
+                        const checkboxes = document.querySelectorAll('input[name="elective-sections"]:checked');
+                        data.sections = Array.from(checkboxes).map(cb => cb.value);
+                        data.section = data.sections[0] || ''; // Fallback for legacy code
+                        data.isElective = true;
+                    } else {
+                        data.section = document.getElementById('section').value;
+                        if (type === 'batch') {
+                            data.batch = document.getElementById('batchSelect').value;
+                        }
+                    }
+                }
+
+                timetableData[currentCellId] = data;
+                renderCell(cell, data);
+            }
+            // Auto-sync handling section whenever timetable changes
+            syncHandlingFromTimetable();
+
+            // PERFORMANCE [BUG 7 FIX]: Stage changes instead of saving immediately
+            hasUnsavedChanges = true;
+            updateUnsavedIndicator();
+            showToast('Changes staged — click Save to apply', 'info');
+
+            closeModal();
+        }
+
+        let hasUnsavedChanges = false;
+        function updateUnsavedIndicator() {
+            const btn = document.getElementById('saveBtn');
+            const indicator = document.getElementById('unsaved-indicator');
+            if (hasUnsavedChanges) {
+                if (indicator) indicator.style.display = 'inline-block';
+                btn.classList.add('pulse');
+            } else {
+                if (indicator) indicator.style.display = 'none';
+                btn.classList.remove('pulse');
+            }
+        }
+
+        window.addEventListener('beforeunload', (e) => {
+            if (hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        function previewPhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    uploadedPhotoBase64 = e.target.result;
+                    document.getElementById('photo-preview').innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    document.getElementById('remove-photo-btn').classList.add('has-photo');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function saveEverything() {
+            const currentUser = await db.getCurrentUser();
+            const existing = await db.getProfile(targetUserId);
+
+            // Never send the existing password hash back — strip it from the payload
+            const { password: _oldHash, ...existingWithoutPass } = existing;
+
+            const p = {
+                ...existingWithoutPass,
+                name: document.getElementById('full-name').value,
+                desig: document.getElementById('designation').value,
+                id: document.getElementById('email').value,
+                phone: document.getElementById('phoneNumber').value,
+                dept: document.getElementById('department').value,
+                subjectHandling: document.getElementById('subject-handling').value,
+                classHandling: document.getElementById('class-handling').value,
+                photo: uploadedPhotoBase64,
+                timetable: timetableData
+            };
+
+            // Handle password change via dedicated endpoint
+            const newPass = document.getElementById('account-password').value.trim();
+            if (newPass) {
+                // Security Confirmation [BUG 8 FIX]
+                if (isAdmin && targetUserId !== currentUser.id) {
+                    if (!confirm(`You are resetting the password for ${p.name}. This will require them to use the new password field on next login. Continue?`)) {
+                        return;
+                    }
+                }
+
+                const result = await db.changePassword(targetUserId, '', newPass);
+                if (result && result.error) {
+                    showToast('Password error: ' + result.error, 'error');
+                    return;
+                }
+                
+                // Notify user [BUG 8 FIX]
+                if (isAdmin && targetUserId !== currentUser.id) {
+                    await db.sendNotification(targetUserId, currentUser.id, 'alert', {
+                        msg: `Your account password was reset by an administrator.`
+                    });
+                }
+                
+                document.getElementById('account-password').value = '';
+            }
+
+            console.log('Saving profile with photo size:', uploadedPhotoBase64 ? uploadedPhotoBase64.length : 0);
+            await db.saveProfile(targetUserId, p);
+            hasUnsavedChanges = false;
+            updateUnsavedIndicator();
+
+            // If the user changed their OWN email/ID, update the session
+            if (targetUserId === currentUser.id && currentUser.id !== p.id) {
+                db.login(p.id);
+            }
+
+            // Show Success Animation
+            const successModal = document.getElementById('successModal');
+            successModal.classList.add('active');
+
+            setTimeout(() => {
+                successModal.classList.remove('active');
+                window.location.href = 'dashboard.html';
+            }, 2500);
+        }
+
+
+
+        // Multi-select tags are now purely visual and automatic
+        function renderTags(valueString, containerId, hiddenId) {
+            const container = document.getElementById(containerId);
+            const hiddenInput = document.getElementById(hiddenId);
+            const values = valueString ? valueString.split(',').map(v => v.trim()).filter(v => v) : [];
+
+            container.innerHTML = values.map(v => `
+                <div class="tag-chip" style="cursor: default; padding-right: 0.75rem;">
+                    ${v}
+                </div>
+            `).join('');
+
+            // Ensure hidden input is updated accurately
+            hiddenInput.value = values.join(', ');
+        }
+
+        function syncHandlingFromTimetable() {
+            const subjectsSet = new Set();
+            const classesSet = new Set();
+
+            if (timetableData) {
+                Object.values(timetableData).forEach(data => {
+                    if (!data) return;
+                    if (data.subject) subjectsSet.add(data.subject);
+                    
+                    if (data.year) {
+                        const y = data.year;
+                        const suffix = y == '1' ? 'st' : y == '2' ? 'nd' : y == '3' ? 'rd' : 'th';
+                        const yearPrefix = `${y}${suffix} Year`;
+                        
+                        if (data.isElective && Array.isArray(data.sections)) {
+                            // Skip adding multiple class selections to Class Handling per user request
+                        } else if (data.section) {
+                            classesSet.add(`${yearPrefix} - ${data.section}`);
+                        }
+                    }
+                });
+            }
+
+            const finalSubs = Array.from(subjectsSet).sort().join(', ');
+            const finalClasses = Array.from(classesSet).sort().join(', ');
+
+            // Always update hidden inputs first
+            const subInput = document.getElementById('subject-handling');
+            const clsInput = document.getElementById('class-handling');
+            
+            if (subInput) subInput.value = finalSubs;
+            if (clsInput) clsInput.value = finalClasses;
+
+            // Then render the visual tags
+            renderTags(finalSubs, 'subject-tags', 'subject-handling');
+            renderTags(finalClasses, 'class-tags', 'class-handling');
+        }
+
+        init();
+    </script>
+</body>
+
+</html>
