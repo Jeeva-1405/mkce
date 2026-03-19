@@ -3,7 +3,7 @@
  * Handles persistence for faculty profiles and directory.
  */
 
-const API_URL = '/api';
+const API_URL = 'https://faculty-alteraion.onrender.com/api';
 
 const DB_KEYS = {
     CURRENT_USER: 'facultySync_current_user',
