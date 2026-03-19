@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - FacultySync</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/db.js"></script>
+    <script src="js/common.js"></script>
+    <style>
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .report-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-medium);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .date-input {
+            background: #f8fafc;
+            border: 1px solid var(--border-medium);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .report-preview {
+            border-top: 1px solid var(--border-light);
+            padding-top: 2rem;
+            display: none;
+        }
+
+        .report-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .report-stat-item {
+            padding: 1.25rem;
+            background: var(--bg-main);
+            border-radius: var(--radius-md);
+            text-align: center;
+        }
+
+        .report-stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-main);
+        }
+
+        .report-stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-top: 0.25rem;
+        }
+
+        .skeleton-loader {
+            height: 200px;
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            border-radius: var(--radius-lg);
+            display: none;
+        }
+
+        @keyframes skeleton-loading {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        .curriculum-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .curriculum-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .curriculum-item:hover {
+            border-color: var(--primary-accent);
+            background: white;
+        }
+
+        .remove-subject-btn {
+            color: var(--danger);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            font-size: 0.9rem;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .remove-subject-btn:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="navbar-left">
+            <img src="college_banner.png" class="nav-institutional-logo" alt="MKCE Logo">
+        </div>
+        <div class="navbar-center">
+            <a href="admin-dashboard.html" class="nav-link active"><i class="fas fa-chart-pie"></i> Dashboard</a>
+            <a href="directory.html" class="nav-link"><i class="fas fa-address-book"></i> Profiles</a>
+        </div>
+        <div class="navbar-right">
+            <div class="nav-year-tag">Admin Portal</div>
+            <a href="notifications.html" class="nav-notif-link" title="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notif-badge" style="display: none;">0</span>
+            </a>
+            <div class="profile-dropdown-container">
+                <div class="profile-pill" id="profilePill">
+                    <div class="profile-info">
+                        <span class="profile-name" id="user-nav-name">Admin</span>
+                        <span class="profile-role" id="user-nav-role">System Admin</span>
+                    </div>
+                    <div class="profile-avatar" id="user-nav-avatar">A</div>
+                </div>
+                <div class="profile-dropdown-menu" id="profileMenu">
+                    <a href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container" style="padding-top: 8rem;">
+        <div class="page-header" style="margin-bottom: 2.5rem;">
+            <div>
+                <h1 style="font-size: 1.75rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">Institutional
+                    Intelligence</h1>
+                <p style="color: var(--text-muted);">Monitor faculty engagement and administrative metrics across all
+                    departments.</p>
+            </div>
+        </div>
+
+        <!-- Admin Quick Stats -->
+        <div class="admin-grid">
+            <div class="stat-card reveal">
+                <div class="stat-icon" style="background: rgba(0, 74, 137, 0.1); color: var(--primary-main);">
+                    <i class="fas fa-users-viewfinder"></i>
+                </div>
+                <div>
+                    <div id="total-faculty" class="stat-value">0</div>
+                    <div class="stat-label">Total Faculty</div>
+                </div>
+            </div>
+            <div class="stat-card reveal delay-1">
+                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                    <i class="fas fa-building-circle-check"></i>
+                </div>
+                <div>
+                    <div id="active-depts" class="stat-value">0</div>
+                    <div class="stat-label">Active Depts</div>
+                </div>
+            </div>
+            <div class="stat-card reveal delay-2">
+                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                    <i class="fas fa-clock-rotate-left"></i>
+                </div>
+                <div>
+                    <div id="active-requests" class="stat-value">0</div>
+                    <div class="stat-label">Active Requests</div>
+                </div>
+            </div>
+            <div class="stat-card reveal delay-3">
+                <div class="stat-icon" style="background: rgba(197, 33, 40, 0.1); color: var(--primary-accent);">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div>
+                    <div id="substitutions-today" class="stat-value">0</div>
+                    <div class="stat-label">Substitutions (Today)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Report Section -->
+        <section class="report-section reveal delay-4">
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.5rem;">Generate
+                Activity Report</h3>
+            <div class="filter-group">
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label" style="font-size: 0.7rem;">Start Date</label>
+                    <input type="date" id="report-start" class="date-input">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label" style="font-size: 0.7rem;">End Date</label>
+                    <input type="date" id="report-end" class="date-input">
+                </div>
+                <div class="form-group" style="margin: 0;">
+                    <label class="form-label" style="font-size: 0.7rem;">Report Type</label>
+                    <select id="report-type" class="date-input" style="min-width: 200px;">
+                        <option value="leaves">Leave & Substitution Summary</option>
+                        <option value="engagement">Faculty Engagement Index</option>
+                        <option value="attendance">Class Coverage Report</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" style="height: 42px; border-radius: var(--radius-sm);"
+                    onclick="generateReport()">
+                    <i class="fas fa-file-export" style="margin-right: 0.5rem;"></i> Generate Report
+                </button>
+            </div>
+
+            <div id="report-loading" class="skeleton-loader"></div>
+
+            <div id="report-results" class="report-preview">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 2px solid var(--bg-main); padding-bottom: 1rem;">
+                    <h4 id="report-title" style="font-size: 1.1rem; color: var(--text-main);">Leave & Substitution Summary</h4>
+                    <div style="text-align: right;">
+                        <span id="report-range" style="display: block; font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Feb 01 - Feb 20, 2026</span>
+                        <span id="report-record-count" style="display: block; font-size: 0.75rem; color: var(--primary-main); font-weight: 700; margin-top: 4px;"></span>
+                    </div>
+                </div>
+
+                <div class="report-stat-grid">
+                    <div class="report-stat-item">
+                        <div id="rep-leaves" class="report-stat-value">0</div>
+                        <div class="report-stat-label">Total Leaves</div>
+                    </div>
+                    <div class="report-stat-item">
+                        <div id="rep-subs" class="report-stat-value">0</div>
+                        <div class="report-stat-label">Met Substitutions</div>
+                    </div>
+                    <div class="report-stat-item">
+                        <div id="rep-rate" class="report-stat-value">0%</div>
+                        <div class="report-stat-label">Coverage Rate</div>
+                    </div>
+                    <div class="report-stat-item">
+                        <div id="rep-unmet" class="report-stat-value">0</div>
+                        <div class="report-stat-label">Pending / Unmet</div>
+                    </div>
+                </div>
+
+                <div style="text-align: right;">
+                    <button class="btn btn-secondary" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print PDF
+                    </button>
+                    <button class="btn btn-primary" onclick="downloadCSV()" style="margin-left: 0.5rem;">
+                        <i class="fas fa-file-excel"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section Management Section -->
+        <section class="report-section reveal delay-5">
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.5rem;">Manage
+                Year-wise Sections</h3>
+            <div style="display: grid; grid-template-columns: 240px 1fr; gap: 2.5rem;">
+                <div>
+                    <label class="form-label">Select Year</label>
+                    <select id="section-year-select" class="form-input" onchange="loadSectionsForYear(this.value)">
+                        <option value="1">1st Year</option>
+                        <option value="2">2nd Year</option>
+                        <option value="3">3rd Year</option>
+                        <option value="4">4th Year</option>
+                    </select>
+
+                    <div
+                        style="margin-top: 2rem; padding: 1.25rem; background: var(--bg-main); border-radius: var(--radius-md); border: 1px dashed var(--border-medium);">
+                        <label class="form-label" style="font-size: 0.75rem;">Add New Section</label>
+                        <input type="text" id="new-section-name" class="form-input" placeholder="e.g. ECE-F"
+                            style="margin-bottom: 1rem; border-style: dashed;">
+                        <button class="btn btn-primary w-full" onclick="addSectionToYear()"
+                            style="height: 38px; font-size: 0.8rem;">
+                            <i class="fas fa-plus" style="margin-right: 0.5rem;"></i> Add Section
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4
+                            style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                            Current Sections</h4>
+                        <span id="section-count-badge"
+                            style="background: var(--primary-light); color: var(--primary-main); font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: 700;">0
+                            Sections</span>
+                    </div>
+                    <ul id="section-list" class="curriculum-list">
+                        <div class="loader-container" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <i class="fas fa-spinner fa-spin"></i> Loading sections...
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Curriculum Management Section -->
+        <section class="report-section reveal delay-6" style="margin-top: 2rem;">
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.5rem;">Manage
+                Curriculum</h3>
+            <div style="display: grid; grid-template-columns: 240px 1fr; gap: 2.5rem;">
+                <div>
+                    <label class="form-label">Select Year</label>
+                    <select id="curriculum-year-select" class="form-input"
+                        onchange="loadCurriculumFromUI()">
+                        <option value="1">1st Year</option>
+                        <option value="2">2nd Year</option>
+                        <option value="3">3rd Year</option>
+                        <option value="4">4th Year</option>
+                    </select>
+
+                    <div id="stream-selector-container" style="display: none; margin-top: 1rem;">
+                        <label class="form-label">Select Stream</label>
+                        <select id="curriculum-stream-select" class="form-input" onchange="loadCurriculumFromUI()">
+                            <option value="ECE">ECE</option>
+                            <option value="VLSI">VLSI</option>
+                        </select>
+                    </div>
+                    <div
+                        style="margin-top: 2rem; padding: 1.25rem; background: var(--bg-main); border-radius: var(--radius-md); border: 1px dashed var(--border-medium);">
+                        <label class="form-label" style="font-size: 0.75rem;">Subject Name</label>
+                        <input type="text" id="new-subject-name" class="form-input" placeholder="Subject name..."
+                            style="margin-bottom: 1rem;">
+
+                        <label class="form-label" style="font-size: 0.75rem;">Subject Type</label>
+                        <select id="new-subject-type" class="form-input" style="margin-bottom: 1rem;">
+                            <option value="normal">Normal Subject</option>
+                            <option value="elective">Elective Subject </option>
+                            <option value="batch">Batch 1/2</option>
+                        </select>
+
+                        <button class="btn btn-primary w-full" onclick="addSubjectToCurriculum()">
+                            <i class="fas fa-plus"></i> Add Subject
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4
+                            style="font-size: 0.9rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">
+                            Current Subjects</h4>
+                        <span id="subject-count-badge"
+                            style="background: var(--primary-light); color: var(--primary-main); font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: 700;">0
+                            Subjects</span>
+                    </div>
+                    <ul id="curriculum-list" class="curriculum-list">
+                        <div class="loader-container" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <i class="fas fa-spinner fa-spin"></i> Loading curriculum...
+                        </div>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let currentCurriculum = {};
+        let currentSections = {}; // BUG 9 FIX
+
+        async function initAdminStats() {
+            const allFaculties = await db.getAllFaculties();
+            document.getElementById('total-faculty').innerText = allFaculties.length;
+
+            const depts = new Set(allFaculties.map(f => f.dept).filter(d => d));
+            document.getElementById('active-depts').innerText = depts.size;
+
+            const allNotifs = await db.getAllNotifications();
+            const requests = allNotifs.filter(n => n.type === 'request').length;
+            const subsToday = allNotifs.filter(n => n.type === 'approval').length;
+
+            document.getElementById('active-requests').innerText = requests;
+            document.getElementById('substitutions-today').innerText = subsToday;
+
+            const end = new Date();
+            const start = new Date();
+            start.setDate(end.getDate() - 30);
+
+            document.getElementById('report-start').value = start.toISOString().split('T')[0];
+            document.getElementById('report-end').value = end.toISOString().split('T')[0];
+
+            // Initialize Curriculum
+            const curriculum = await db.getCurriculum();
+            if (curriculum && Object.keys(curriculum).length > 0) {
+                currentCurriculum = curriculum;
+            }
+            // Toggle stream selector inline [BUG 11 FIX]
+            document.getElementById('stream-selector-container').style.display = 'block';
+            loadCurriculumFromUI();
+
+            // Initialize Sections [BUG 9 FIX]
+            const sections = await db.getSections();
+            if (sections && Object.keys(sections).length > 0) {
+                currentSections = sections;
+                loadSectionsForYear('1');
+            } else {
+                document.getElementById('section-list').innerHTML = '<div style="padding: 1rem; color: var(--text-muted);">No sections found.</div>';
+            }
+        }
+
+
+
+        function loadCurriculumFromUI() {
+            const year = document.getElementById('curriculum-year-select').value;
+            const stream = document.getElementById('curriculum-stream-select').value;
+            let key = `${year}-${stream}`;
+            loadCurriculumForYear(key);
+        }
+
+        function loadCurriculumForYear(key) {
+            const list = document.getElementById('curriculum-list');
+            let subjects = currentCurriculum[key] || [];
+
+            // Migration: convert strings to objects if necessary
+            subjects = subjects.map(s => typeof s === 'string' ? { name: s, type: 'normal' } : s);
+            currentCurriculum[key] = subjects;
+
+            document.getElementById('subject-count-badge').innerText = `${subjects.length} Subjects`;
+
+            if (subjects.length === 0) {
+                list.innerHTML = `<li style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">No subjects added for this ${key.includes('-') ? 'stream' : 'year'}.</li>`;
+                return;
+            }
+
+            list.innerHTML = subjects.map((s, idx) => `
+                <li class="curriculum-item">
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <span style="font-weight: 500; color: var(--text-main);">${s.name}</span>
+                        <span style="font-size: 0.65rem; color: var(--primary-main); font-weight: 700; text-transform: uppercase; background: var(--primary-light); padding: 2px 8px; border-radius: 4px; width: fit-content;">
+                            ${s.type === 'batch' ? 'Lab / Batches' : s.type}
+                        </span>
+                    </div>
+                    <button class="remove-subject-btn" onclick="removeSubjectFromCurriculum('${key}', ${idx})" title="Remove Subject">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </li>
+            `).join('');
+        }
+
+        async function addSubjectToCurriculum() {
+            const year = document.getElementById('curriculum-year-select').value;
+            const stream = document.getElementById('curriculum-stream-select').value;
+            let key = `${year}-${stream}`;
+
+            const nameInput = document.getElementById('new-subject-name');
+            const typeInput = document.getElementById('new-subject-type');
+            const name = nameInput.value.trim();
+            const type = typeInput.value;
+
+            if (!name) return;
+            if (!currentCurriculum[key]) currentCurriculum[key] = [];
+
+            // Ensure all items in key are objects
+            currentCurriculum[key] = currentCurriculum[key].map(s => typeof s === 'string' ? { name: s, type: 'normal' } : s);
+
+            if (currentCurriculum[key].find(s => s.name.toLowerCase() === name.toLowerCase())) {
+                showToast('Subject already exists!', 'warning');
+                return;
+            }
+
+            currentCurriculum[key].push({ name, type });
+            const result = await db.saveCurriculum(currentCurriculum);
+
+            if (result && result.error) {
+                showToast('Failed to save: ' + result.error, 'error');
+                currentCurriculum[key].pop();
+                return;
+            }
+
+            nameInput.value = '';
+            loadCurriculumForYear(key);
+            showToast('Subject added successfully!', 'success');
+        }
+
+        async function removeSubjectFromCurriculum(key, index) {
+            if (!confirm('Are you sure you want to remove this subject?')) return;
+
+            const removed = currentCurriculum[key].splice(index, 1);
+            const result = await db.saveCurriculum(currentCurriculum);
+
+            if (result && result.error) {
+                showToast('Failed to save removal: ' + result.error, 'error');
+                currentCurriculum[key].splice(index, 0, removed[0]);
+                return;
+            }
+
+            loadCurriculumForYear(key);
+            showToast('Subject removed successfully!', 'success');
+        }
+
+        function loadSectionsForYear(year) {
+            const list = document.getElementById('section-list');
+            const sections = currentSections[year] || [];
+            document.getElementById('section-count-badge').innerText = `${sections.length} Sections`;
+
+            if (sections.length === 0) {
+                list.innerHTML = '<li style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9rem;">No sections added for this year.</li>';
+                return;
+            }
+
+            list.innerHTML = sections.map((s, idx) => `
+                <li class="curriculum-item">
+                    <span style="font-weight: 500; color: var(--text-main);">${s}</span>
+                    <button class="remove-subject-btn" onclick="removeSectionFromYear('${year}', ${idx})" title="Remove Section">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </li>
+            `).join('');
+        }
+
+        async function addSectionToYear() {
+            const year = document.getElementById('section-year-select').value;
+            const input = document.getElementById('new-section-name');
+            const name = input.value.trim().toUpperCase();
+
+            if (!name) return;
+            if (!currentSections[year]) currentSections[year] = [];
+
+            if (currentSections[year].includes(name)) {
+                showToast('Section already exists!', 'warning');
+                return;
+            }
+
+            currentSections[year].push(name);
+            const result = await db.saveSections(currentSections);
+
+            if (result && result.error) {
+                showToast('Failed to save: ' + result.error, 'error');
+                currentSections[year].pop();
+                return;
+            }
+
+            input.value = '';
+            loadSectionsForYear(year);
+            showToast('Section added successfully!', 'success');
+        }
+
+        async function removeSectionFromYear(year, index) {
+            if (!confirm('Are you sure you want to remove this section?')) return;
+
+            const removed = currentSections[year].splice(index, 1);
+            const result = await db.saveSections(currentSections);
+
+            if (result && result.error) {
+                showToast('Failed to save removal: ' + result.error, 'error');
+                currentSections[year].splice(index, 0, removed[0]);
+                return;
+            }
+
+            loadSectionsForYear(year);
+            showToast('Section removed successfully!', 'success');
+        }
+
+        let lastGeneratedData = [];
+
+        async function generateReport() {
+            const results = document.getElementById('report-results');
+            const loading = document.getElementById('report-loading');
+
+            const startStr = document.getElementById('report-start').value;
+            const endStr = document.getElementById('report-end').value;
+
+            if (!startStr || !endStr) {
+                showToast('Please select both start and end dates', 'warning');
+                return;
+            }
+
+            const start = new Date(startStr);
+            start.setHours(0, 0, 0, 0);
+
+            const end = new Date(endStr);
+            end.setHours(23, 59, 59, 999);
+
+            if (start > end) {
+                showToast('Start date cannot be after end date', 'error');
+                return;
+            }
+
+            results.style.display = 'none';
+            loading.style.display = 'block';
+
+            const allNotifs = await db.getAllNotifications();
+
+            loading.style.display = 'none';
+            results.style.display = 'block';
+
+            const type = document.getElementById('report-type').value;
+            document.getElementById('report-range').innerText = `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+            
+            // Filter by date [BUG 1 FIX]
+            const filteredNotifs = allNotifs.filter(n => {
+                const ts = new Date(n.timestamp);
+                return ts >= start && ts <= end;
+            });
+
+            lastGeneratedData = filteredNotifs;
+
+            const actualLeaves = filteredNotifs.filter(n => n.type === 'request').length;
+            const actualSubs = filteredNotifs.filter(n => n.type === 'approval').length;
+
+            const totalLeaves = actualLeaves;
+            const metSubs = actualSubs;
+            const coverage = totalLeaves > 0 ? Math.floor((metSubs / totalLeaves) * 100) : 0;
+
+            document.getElementById('rep-leaves').innerText = totalLeaves;
+            document.getElementById('rep-subs').innerText = metSubs;
+            document.getElementById('rep-rate').innerText = coverage + '%';
+            document.getElementById('rep-unmet').innerText = Math.max(0, totalLeaves - metSubs);
+
+            // Update record count [BUG 1]
+            const recordCountEl = document.getElementById('report-record-count');
+            if (recordCountEl) {
+                recordCountEl.innerText = `${filteredNotifs.length} records matched this range`;
+            }
+
+            if (type === 'leaves') document.getElementById('report-title').innerText = "Leave & Substitution Summary";
+            if (type === 'engagement') document.getElementById('report-title').innerText = "Faculty Engagement Index";
+            if (type === 'attendance') document.getElementById('report-title').innerText = "Class Coverage Report";
+
+            showToast('Report generated successfully!', 'success');
+        }
+
+        async function downloadCSV() {
+            if (!lastGeneratedData || lastGeneratedData.length === 0) {
+                showToast('No data available to export. Generate a report first.', 'warning');
+                return;
+            }
+
+            const title = document.getElementById('report-title').innerText;
+            const range = document.getElementById('report-range').innerText;
+            const leaves = document.getElementById('rep-leaves').innerText;
+            const subs = document.getElementById('rep-subs').innerText;
+            const rate = document.getElementById('rep-rate').innerText;
+            const unmet = document.getElementById('rep-unmet').innerText;
+
+            const rows = [
+                ['FacultySync - Institutional Report'],
+                ['Report Type', title],
+                ['Date Range', range],
+                ['Generated On', new Date().toLocaleString()],
+                [],
+                ['--- SUMMARY METRICS ---'],
+                ['METRIC', 'VALUE'],
+                ['Total Leaves', leaves],
+                ['Met Substitutions', subs],
+                ['Coverage Rate', rate],
+                ['Pending / Unmet', unmet],
+                [],
+                ['--- DETAILED FACULTY ROSTER ---'],
+                ['NAME', 'ID/EMAIL', 'DEPARTMENT', 'DESIGNATION', 'PHONE']
+            ];
+
+            const allFaculties = await db.getAllFaculties();
+            allFaculties.forEach(f => {
+                rows.push([
+                    `"${f.name || 'N/A'}"`,
+                    `"${f.id || 'N/A'}"`,
+                    `"${f.dept || 'N/A'}"`,
+                    `"${f.desig || 'N/A'}"`,
+                    `"${f.phone || 'N/A'}"`
+                ]);
+            });
+
+            rows.push([]);
+            rows.push(['--- ACTIVITY LOG (FILTERED RANGE) ---']);
+            rows.push(['TIMESTAMP', 'FROM', 'TO', 'TYPE', 'DETAILS']);
+
+            // Use the FILTERED data stored during report generation [BUG 1]
+            lastGeneratedData.forEach(n => {
+                const data = n.data || {}; // Null guard [BUG 2]
+                let detailsStr = "";
+                
+                if (n.type === 'request' || n.type === 'hod_request') {
+                    detailsStr = `Period ${data.period || '?'} on ${data.day || '?'} (${data.subject || 'N/A'})`;
+                } else if (data.msg) {
+                    detailsStr = data.msg;
+                } else {
+                    detailsStr = `Reference ID: ${n.id}`;
+                }
+
+                rows.push([
+                    `"${new Date(n.timestamp).toLocaleString()}"`,
+                    `"${(n.fromName || 'N/A').replace(/"/g, '""')} (${(n.from || 'N/A').replace(/"/g, '""')})"`,
+                    `"${(n.to || 'All').replace(/"/g, '""')}"`,
+                    `"${(n.type || 'UNKNOWN').toUpperCase()}"`,
+                    `"${detailsStr.replace(/"/g, '""')}"`
+                ]);
+            });
+
+            let csvContent = "";
+            rows.forEach(row => {
+                csvContent += row.join(",") + "\n";
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `FacultySync_Report_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('CSV report downloaded!', 'success');
+        }
+
+        document.addEventListener('DOMContentLoaded', initAdminStats);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty Dashboard - FacultySync</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="js/db.js"></script>
+    <script src="js/common.js"></script>
+    <style>
+        /* ============================================================
+           DASHBOARD — PROFESSIONAL MINIMALIST REDESIGN
+           Inspired by: Notion, Linear, Vercel
+           Palette: Warm off-white bg · Slate text · Crisp white cards
+           ============================================================ */
+
+        /* 1. Base — refined background & typography */
+        body {
+            background-color: #f4f5f7;
+            color: #1a1d23;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 2. Navbar — clean floating pill */
+        /* 3. Main content */
+        .main-content {
+            max-width: 1200px !important;
+        }
+
+        /* 4. Page header */
+        .page-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e4e7ec;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .page-header h1 {
+            font-size: 1.375rem !important;
+            font-weight: 700 !important;
+            color: #1a1d23 !important;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.2rem !important;
+        }
+
+        #today-date-text {
+            color: #8a94a0 !important;
+            font-size: 0.8125rem !important;
+        }
+
+        /* 5. Stat cards — white, clean, left accent bar */
+        .stat-card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid #e4e7ec;
+            border-radius: 10px;
+            padding: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+        }
+
+        .stat-card:nth-child(1)::before {
+            background: #004a89;
+        }
+
+        .stat-card:nth-child(2)::before {
+            background: #d97706;
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+            border-color: #c8cdd5 !important;
+            transform: translateY(-2px) !important;
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.0625rem;
+            flex-shrink: 0;
+        }
+
+        .stat-card:nth-child(1) .stat-icon {
+            background: #eef4fb;
+            color: #004a89;
+        }
+
+        .stat-card:nth-child(2) .stat-icon {
+            background: #fef9ee;
+            color: #d97706;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1a1d23;
+            line-height: 1;
+            letter-spacing: -0.03em;
+        }
+
+        .stat-label {
+            color: #8a94a0;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-top: 0.2rem;
+        }
+
+        /* 6. Section cards */
+        .card {
+            background: #ffffff !important;
+            border: 1px solid #e4e7ec !important;
+            border-radius: 10px !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07) !important;
+            border-color: #c8cdd5 !important;
+            transform: none !important;
+        }
+
+        .card h3 {
+            color: #1a1d23 !important;
+            font-size: 0.9375rem !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.01em;
+        }
+
+        .card h3 span {
+            color: #8a94a0 !important;
+            font-weight: 500 !important;
+        }
+
+        .card a[href="notifications.html"] {
+            color: #004a89 !important;
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            text-decoration: none !important;
+        }
+
+        .card a[href="notifications.html"]:hover {
+            text-decoration: underline !important;
+        }
+
+        /* 7. Schedule blocks */
+        .schedule-block {
+            background: #f9fafb !important;
+            border: 1px solid #e9ecef !important;
+            border-left: 3px solid #004a89 !important;
+            border-radius: 8px !important;
+            padding: 0.875rem 1rem !important;
+            margin-bottom: 0.625rem !important;
+            transition: background 0.15s ease, border-color 0.15s ease !important;
+            box-shadow: none !important;
+        }
+
+        .schedule-block:hover {
+            background: #f0f5fb !important;
+            border-left-color: #0062b8 !important;
+        }
+
+        .schedule-block h4 {
+            color: #1a1d23 !important;
+            font-weight: 600 !important;
+        }
+
+        .schedule-meta {
+            color: #8a94a0 !important;
+            font-size: 0.8125rem !important;
+        }
+
+        .schedule-meta i {
+            color: #adb5c0 !important;
+            font-size: 0.7rem !important;
+        }
+
+        /* Period badge in schedule */
+        .schedule-block .stat-icon {
+            background: #eef4fb !important;
+            color: #004a89 !important;
+            border-radius: 50% !important;
+            font-size: 0.8125rem !important;
+            font-weight: 700 !important;
+            width: 34px !important;
+            height: 34px !important;
+        }
+
+        /* 8. Alert items - Minimalist & Professional */
+        .alert-item {
+            padding: 1rem 0.75rem !important;
+            display: flex !important;
+            gap: 1rem !important;
+            border-bottom: 1px solid #f1f5f9 !important;
+            background: transparent !important;
+            border-radius: 10px !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer;
+            margin: 0 -0.5rem;
+            position: relative;
+        }
+
+        .alert-item:hover {
+            background: #f8fafc !important;
+        }
+
+        .alert-item:last-child {
+            border-bottom: none !important;
+        }
+
+        .alert-content p {
+            font-size: 0.8125rem !important;
+            color: #1e293b !important;
+            line-height: 1.5 !important;
+            margin: 0 !important;
+            font-weight: 500 !important;
+        }
+
+        .alert-time {
+            font-size: 0.7rem !important;
+            color: #94a3b8 !important;
+            font-weight: 600 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            display: block;
+            margin-top: 0.35rem;
+        }
+
+        .alert-dot {
+            width: 8px !important;
+            height: 8px !important;
+            border-radius: 50% !important;
+            margin-top: 6px !important;
+            flex-shrink: 0 !important;
+            position: relative;
+        }
+
+        .alert-dot::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0.2;
+        }
+
+        /* 9. Substitution activity mini-cards */
+        .card [style*="background: var(--bg-main)"] {
+            background: #f7f8fa !important;
+            border: 1px solid #e4e7ec !important;
+            border-radius: 8px !important;
+        }
+
+        /* 10. Buttons */
+        .btn-primary {
+            background: #1a1d23 !important;
+            color: #ffffff !important;
+            border: 1px solid #1a1d23 !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            font-size: 0.8125rem !important;
+            padding: 0.625rem 1.25rem !important;
+            letter-spacing: -0.01em;
+            box-shadow: none !important;
+            transition: background 0.15s ease, box-shadow 0.15s ease !important;
+        }
+
+        .btn-primary:hover {
+            background: #2d3038 !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+            filter: none !important;
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            border: 1px solid #e4e7ec;
+            color: #374151;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.8125rem;
+        }
+
+        .btn-secondary:hover {
+            background: #f7f8fa;
+            border-color: #adb5c0;
+            color: #1a1d23;
+        }
+
+        /* 11. Modals */
+        .modal-overlay {
+            background: rgba(15, 17, 21, 0.45) !important;
+            backdrop-filter: blur(4px) !important;
+        }
+
+        .modal-content {
+            background: #ffffff !important;
+            border: 1px solid #e4e7ec !important;
+            border-radius: 14px !important;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        .modal-content h2 {
+            color: #1a1d23 !important;
+            font-size: 1.125rem !important;
+            font-weight: 700 !important;
+        }
+
+        /* 12. Search dropdown */
+        .search-results-dropdown {
+            background: #ffffff !important;
+            border: 1px solid #e4e7ec !important;
+            border-radius: 12px !important;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .search-result-item:hover {
+            background: #f7f8fa !important;
+        }
+
+        .result-title {
+            color: #1a1d23 !important;
+            font-weight: 600 !important;
+        }
+
+        .result-subtitle {
+            color: #8a94a0 !important;
+        }
+
+        .result-icon {
+            background: #f0f2f5 !important;
+            color: #374151 !important;
+        }
+
+        .search-section-header {
+            background: #f7f8fa !important;
+            color: #adb5c0 !important;
+            font-size: 0.6875rem !important;
+            letter-spacing: 0.07em !important;
+        }
+
+        /* 13. Toast */
+        .toast {
+            background: #1a1d23 !important;
+            border: none !important;
+            border-left: 3px solid #004a89 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .toast-message {
+            color: #f1f5f9 !important;
+            font-size: 0.8125rem !important;
+        }
+
+        .toast-success {
+            border-left-color: #059669 !important;
+        }
+
+        .toast-error {
+            border-left-color: #dc2626 !important;
+        }
+
+        .toast-warning {
+            border-left-color: #d97706 !important;
+        }
+
+        /* 14. Success animation */
+        .success-animation {
+            margin: 20px auto;
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            position: relative;
+            margin: 0 auto;
+        }
+
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 4;
+            stroke-miterlimit: 10;
+            stroke: #059669;
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            stroke-width: 5;
+            stroke: #059669;
+            fill: none;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.6s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        /* 15. User initials */
+        .user-initials {
+            width: 48px;
+            height: 48px;
+            background: #1a1d23;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- (Modals preserved) -->
+    <div class="modal-overlay" id="leaveModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 0.5rem;">Request Leave</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem;">Select the period you need a
+                substitute for.</p>
+            <div id="leave-period-list"
+                style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 2rem;"></div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-secondary w-full" onclick="closeLeaveModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ... rest of modals ... -->
+    <div class="modal-overlay" id="facultySelectModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 0.5rem;">Select Substitute</h2>
+            <p id="faculty-select-msg" style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">
+                Select an available faculty to send a request.</p>
+            <div id="available-faculty-list"
+                style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2rem; max-height: 300px; overflow-y: auto;">
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-secondary w-full" onclick="closeFacultySelectModal()">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="successModal">
+        <div class="modal-content" style="max-width: 350px; text-align: center; padding: 3rem 2rem;">
+            <div class="success-animation">
+                <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
+                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" style="stroke: #059669;" />
+                </svg>
+            </div>
+            <h3 style="margin-top: 2rem; color: var(--text-main);">Request Sent!</h3>
+            <p id="allocation-msg" style="color: var(--text-muted); font-size: 0.875rem; margin-top: 0.5rem;"></p>
+        </div>
+    </div>
+    <nav class="navbar">
+
+        <div class="navbar-left">
+            <img src="college_banner.png" class="nav-institutional-logo" alt="MKCE Logo">
+        </div>
+        <div class="navbar-center">
+            <a href="dashboard.html" class="nav-link active"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="leave-history.html" class="nav-link"><i class="fas fa-history"></i> Leave History</a>
+            <a href="directory.html" class="nav-link"><i class="fas fa-address-book"></i> Profiles</a>
+        </div>
+        <div class="navbar-right">
+            <div class="nav-year-tag">2025-2026</div>
+            <a href="notifications.html" class="nav-notif-link" title="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notif-badge" style="display: none;">0</span>
+            </a>
+
+            <div class="profile-dropdown-container">
+                <div class="profile-pill" id="profilePill">
+                    <div class="profile-info">
+                        <span class="profile-name" id="user-nav-name">...</span>
+                        <span class="profile-role" id="user-nav-role">Faculty</span>
+                    </div>
+                    <div class="profile-avatar" id="user-nav-avatar">?</div>
+                </div>
+                <div class="profile-dropdown-menu" id="profileMenu">
+                    <a href="details.html"><i class="fas fa-user-circle"></i> Profile</a>
+                    <div class="dropdown-divider"></div>
+                    <a href="#" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="page-header">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">
+                    Dashboard</h1>
+                <p id="today-date-text" style="color: var(--text-muted); font-size: 0.8125rem; font-weight: 500;">
+                </p>
+            </div>
+            <button class="btn btn-primary" onclick="openLeaveModal()">
+                <i class="fas fa-plus"></i> Request Leave
+            </button>
+        </div>
+
+        <div class="stat-card-grid">
+            <div class="stat-card reveal delay-1">
+                <div class="stat-icon" style="background: rgba(0, 74, 137, 0.1); color: var(--primary-main);">
+                    <i class="fas fa-chalkboard-user"></i>
+                </div>
+                <div>
+                    <div id="classes-count" class="stat-value">0</div>
+                    <div class="stat-label">Classes Today</div>
+                </div>
+            </div>
+            <div class="stat-card reveal delay-2">
+                <div class="stat-icon" style="background: rgba(217, 119, 6, 0.1); color: #d97706;">
+                    <i class="fas fa-mug-hot"></i>
+                </div>
+                <div>
+                    <div id="free-count" class="stat-value">0</div>
+                    <div class="stat-label">Free Periods</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 340px; gap: 2rem; align-items: start;">
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <section class="card reveal delay-2" style="padding: 1.5rem;">
+                    <h3 style="font-size: 0.8125rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1.5rem;">
+                        Today's Schedule &mdash; <span id="current-day-name"
+                            style="color: var(--text-muted); font-weight: 500;">Day</span>
+                    </h3>
+                    <div id="timeline-container"></div>
+                </section>
+
+                <section class="card" style="padding: 1.5rem;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 0.8125rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Substitution
+                            Activity</h3>
+                        <span style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Monthly
+                            Trend</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; text-align: center;">
+                        <div style="padding: 1rem; background: var(--bg-main); border-radius: var(--radius-sm);">
+                            <div id="stat-taken-by-me"
+                                style="font-size: 1.25rem; font-weight: 700; color: var(--primary-main);">00</div>
+                            <div
+                                style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-top: 0.25rem; margin-bottom: 0.5rem; font-weight: 700;">
+                                Taken By Me</div>
+                            <div id="status-taken-by-me" style="font-size: 0.65rem; color: #64748b; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 0.5rem;">
+                                0 Approved · 0 Pending
+                            </div>
+                        </div>
+                        <div style="padding: 1rem; background: var(--bg-main); border-radius: var(--radius-sm);">
+                            <div id="stat-help-given" style="font-size: 1.25rem; font-weight: 700; color: #10b981;">00
+                            </div>
+                            <div
+                                style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-top: 0.25rem; margin-bottom: 0.5rem; font-weight: 700;">
+                                Substitute Given</div>
+                            <div id="status-help-given" style="font-size: 0.65rem; color: #64748b; border-top: 1px solid rgba(0,0,0,0.05); padding-top: 0.5rem;">
+                                0 Approved · 0 Pending
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <section class="card reveal delay-3" style="padding: 1.5rem;">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 0.8125rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; margin: 0;">Recent Alerts</h3>
+                    <a href="notifications.html"
+                        style="font-size: 0.65rem; color: #475569; font-weight: 700; text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em; transition: color 0.2s ease;"
+                        onmouseover="this.style.color='var(--primary-main)'"
+                        onmouseout="this.style.color='#475569'">View
+                        all</a>
+                </div>
+                <div id="alerts-list"></div>
+            </section>
+        </div>
+    </main>
+
+    <script>
+        let profileData = null;
+        let todayClasses = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                profileData = await db.getCurrentUser();
+                // Bug 12 Guard: Stop initialization for non-faculty roles
+                if (!profileData || profileData.role === 'admin' || profileData.role === 'hod') return;
+
+                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const now = new Date();
+                const dayName = days[now.getDay()];
+                const todayHeader = document.getElementById('today-date-text');
+                const currentDayEl = document.getElementById('current-day-name');
+
+                if (currentDayEl) currentDayEl.innerText = dayName;
+                if (todayHeader) todayHeader.innerText = `${dayName}, ${now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+
+                const dayIndex = now.getDay() - 1; // Mon=0
+
+                // Initialize stats for the current day
+                const classesCountEl = document.getElementById('classes-count');
+                const freeCountEl = document.getElementById('free-count');
+                if (classesCountEl) classesCountEl.innerText = "0";
+                if (freeCountEl) freeCountEl.innerText = "0";
+
+                const allNotifs = await db.getAllNotifications() || [];
+
+                if (dayIndex >= 0 && dayIndex <= 4) {
+                    for (let p = 1; p <= 7; p++) {
+                        const cellId = `cell-${dayIndex}-${p}`;
+                        if (profileData.timetable && profileData.timetable[cellId]) {
+                            todayClasses.push({ ...profileData.timetable[cellId], period: p });
+                        }
+                    }
+
+                    // Also fetch classes this user is taking over (Substitutions)
+                    const takeoverApprovals = allNotifs.filter(n =>
+                        n.to === profileData.id &&
+                        n.type === 'approval' &&
+                        n.data && n.data.day === dayName
+                    );
+
+                    takeoverApprovals.forEach(n => {
+                        todayClasses.push({
+                            subject: n.data.subject,
+                            section: n.data.section,
+                            year: n.data.year,
+                            period: n.data.period,
+                            isTakeover: true,
+                            originalFaculty: n.data.facultyAName || n.data.requesterName || 'Faculty'
+                        });
+                    });
+
+                    // Set free count after all classes (including takeovers) are known
+                    if (freeCountEl) freeCountEl.innerText = "7";
+
+                    try {
+                        renderDashboard(todayClasses);
+                    } catch (renderErr) {
+                        console.error("Render Error:", renderErr);
+                        if (classesCountEl) classesCountEl.innerText = "--";
+                        if (freeCountEl) freeCountEl.innerText = "--";
+                        const timeline = document.getElementById('timeline-container');
+                        if (timeline) timeline.innerHTML = '<div style="padding: 2rem; text-align: center; color: #dc2626;"><i class="fas fa-exclamation-triangle"></i><p>Error loading schedule. Please refresh.</p></div>';
+                    }
+                } else {
+                    const timeline = document.getElementById('timeline-container');
+                    if (timeline) timeline.innerHTML = '<p style="padding: 2rem; text-align: center; color: var(--text-muted); font-size: 0.875rem;">No classes scheduled for today.</p>';
+                }
+
+                await loadRecentAlerts(allNotifs);
+            } catch (err) {
+                console.error("Dashboard Init Error:", err);
+            }
+        });
+
+        async function loadRecentAlerts(cachedNotifs) {
+            try {
+                const container = document.getElementById('alerts-list');
+                if (!container) return;
+                const currentUser = await db.getCurrentUser();
+                if (!currentUser) return;
+                const allNotifs = cachedNotifs || await db.getAllNotifications() || [];
+                const notifications = allNotifs.filter(n => n.to === currentUser.id || n.from === currentUser.id);
+                const seenSlots = new Set();
+                const processedNotifs = [];
+
+                for (const n of notifications) {
+                    const isSent = n.from === currentUser.id;
+                    const slotKey = n.data?.cellId ? `${n.data.cellId}-${n.type}` : n.id;
+                    
+                    // For outgoing requests, only show the first one in the recent list to avoid flooding
+                    if (isSent && n.type === 'request') {
+                        if (seenSlots.has(slotKey)) continue;
+                        seenSlots.add(slotKey);
+                    }
+                    processedNotifs.push(n);
+                    if (processedNotifs.length >= 4) break;
+                }
+
+                const notifs = processedNotifs;
+
+                // Calculate Detailed Stats
+                const takeoverApproved = allNotifs.filter(n => 
+                    n.to === currentUser.id && n.type === 'approval' && n.data?.msg?.toLowerCase().includes('takeover')
+                ).length;
+                const takeoverPending = allNotifs.filter(n => 
+                    n.from === currentUser.id && n.type === 'hod_request'
+                ).length;
+
+                const helpApproved = allNotifs.filter(n => 
+                    n.to === currentUser.id && n.type === 'approval' && !n.data?.msg?.toLowerCase().includes('takeover')
+                ).length;
+                const helpPending = allNotifs.filter(n => 
+                    (n.from === currentUser.id && n.type === 'request') || 
+                    (n.type === 'hod_request' && n.data?.facultyA === currentUser.id)
+                ).length;
+
+                // Update UI elements
+                const helpCountEl = document.getElementById('stat-help-given');
+                const takenCountEl = document.getElementById('stat-taken-by-me');
+                const helpStatusEl = document.getElementById('status-help-given');
+                const takenStatusEl = document.getElementById('status-taken-by-me');
+
+                if (helpCountEl) helpCountEl.innerText = (helpApproved + helpPending).toString().padStart(2, '0');
+                if (takenCountEl) takenCountEl.innerText = (takeoverApproved + takeoverPending).toString().padStart(2, '0');
+                
+                if (helpStatusEl) helpStatusEl.innerText = `${helpApproved} Approved · ${helpPending} Pending`;
+                if (takenStatusEl) takenStatusEl.innerText = `${takeoverApproved} Approved · ${takeoverPending} Pending`;
+
+                if (notifs.length === 0) {
+                    container.innerHTML = '<p style="font-size: 0.8125rem; color: var(--text-muted); padding: 1rem 0;">No recent alerts.</p>';
+                    return;
+                }
+
+                container.innerHTML = notifs.map(n => {
+                    const isSent = n.from === currentUser.id;
+                    let icon = 'fa-info-circle';
+                    let color = 'var(--primary-accent)';
+                    if (n.type === 'request') { icon = 'fa-exchange-alt'; color = 'var(--warning)'; }
+                    else if (n.type === 'approval') { icon = 'fa-check-circle'; color = 'var(--success)'; }
+                    else if (n.type === 'rejection') { icon = 'fa-times-circle'; color = 'var(--danger)'; }
+                    else if (n.type === 'hod_request') { icon = 'fa-user-clock'; color = '#004a89'; }
+
+                    let msg = n.data?.msg || ''; 
+                    if (!msg) {
+                        const sub = n.data?.subject || 'Class';
+                        if (n.type === 'request') {
+                            msg = isSent ? `You requested help for ${sub}` : `Substitution request from ${n.fromName}`;
+                        } else if (n.type === 'approval') {
+                            msg = `Request finalized by ${n.fromName}`;
+                        } else if (n.type === 'rejection') {
+                            msg = `${n.fromName} declined request`;
+                        } else if (n.type === 'hod_request') {
+                            msg = `Awaiting HOD approval for ${sub}`;
+                        } else {
+                            msg = 'System updated';
+                        }
+                    }
+
+                    return `
+                    <div class="alert-item" onclick="location.href='notifications.html'">
+                        <div class="alert-dot" style="background: ${color}; color: ${color};"></div>
+                        <div class="alert-content">
+                            <p>${msg}</p>
+                            <span class="alert-time">${new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                    </div>
+                `;
+                }).join('');
+            } catch (err) {
+                console.error("Alerts Load Error:", err);
+            }
+        }
+
+        function renderDashboard(classes) {
+            // Sort by period
+            classes.sort((a, b) => a.period - b.period);
+
+            const activeClassesCount = classes.filter(cls => !cls.isSubstituted || cls.isTakeover).length;
+            document.getElementById('classes-count').innerText = activeClassesCount;
+            document.getElementById('free-count').innerText = Math.max(0, 7 - activeClassesCount);
+            const container = document.getElementById('timeline-container');
+
+            if (classes.length === 0) {
+                container.innerHTML = '<div style="padding: 3rem; text-align: center; color: var(--text-muted); opacity: 0.6;"><i class="fas fa-mug-hot" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i><p>No classes scheduled for today.</p></div>';
+                return;
+            }
+
+            container.innerHTML = classes.map(cls => {
+                let statusBadge = '';
+                let extraStyles = '';
+                let metaExtra = '';
+                let iconStyles = `background: var(--primary-light); color: var(--primary-accent);`;
+
+                if (cls.isSubstituted) {
+                    statusBadge = `<span style="font-size: 0.65rem; background: #fef3c7; color: #d97706; padding: 2px 6px; border-radius: 4px; font-weight: 700;">SUBSTITUTED</span>`;
+                    extraStyles = `border-left-color: var(--warning) !important; background: #fffbeb !important;`;
+                    metaExtra = `<div style="color: #d97706; font-weight: 600; margin-top: 4px; font-size: 0.75rem;"><i class="fas fa-user-friends"></i> Taken by: ${cls.substituteName}</div>`;
+                    iconStyles = `background: #fef3c7; color: #d97706;`;
+                } else if (cls.isTakeover) {
+                    statusBadge = `<span style="font-size: 0.65rem; background: #dcfce7; color: #16a34a; padding: 2px 6px; border-radius: 4px; font-weight: 700;">TAKING OVER</span>`;
+                    extraStyles = `border-left-color: #10b981 !important; background: #f0fdf4 !important;`;
+                    metaExtra = `<div style="color: #16a34a; font-weight: 600; margin-top: 4px; font-size: 0.75rem;"><i class="fas fa-hands-helping"></i> Covering for: ${cls.originalFaculty}</div>`;
+                    iconStyles = `background: #dcfce7; color: #16a34a;`;
+                }
+
+                return `
+                <div class="schedule-block" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--border-light); ${extraStyles}">
+                    <div class="schedule-info" style="flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <h4 style="margin: 0; font-size: 0.9375rem; color: var(--text-main);">${cls.subject}</h4>
+                            ${statusBadge}
+                        </div>
+                        <div class="schedule-meta" style="font-size: 0.8125rem; color: var(--text-muted);">
+                            ${cls.isCounselling ? '<span><i class="fas fa-comments"></i> Counselling</span>' : `
+                            <span><i class="fas fa-layer-group"></i> ${cls.section}</span> &bull; 
+                            <span><i class="fas fa-graduation-cap"></i> Year ${cls.year}</span> &bull;`} 
+                            <span><i class="fas fa-clock"></i> Period ${cls.period}</span>
+                            ${metaExtra}
+                        </div>
+                    </div>
+                    <div class="stat-icon" style="width: 36px; height: 36px; font-size: 0.875rem; opacity: 0.9; ${iconStyles} border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                        ${cls.period}
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // LEAVE MODAL LOGIC
+        function openLeaveModal() {
+            if (todayClasses.length === 0) { showToast("You have no classes today!", "warning"); return; }
+            const container = document.getElementById('leave-period-list');
+            container.innerHTML = todayClasses.map(cls => {
+                const isCounselling = cls.isCounselling || (cls.subject && cls.subject.toLowerCase() === 'counselling');
+                return `
+                <div onclick="showAvailableFaculty(${cls.period}, '${cls.subject}', '${cls.section || ''}', '${cls.year || ''}')" 
+                     style="padding: 1rem; border: 1px solid var(--border-light); border-radius: var(--radius-md); cursor: pointer; transition: all 0.15s; margin-bottom: 0.75rem;" 
+                     onmouseover="this.style.borderColor='var(--primary-accent)'; this.style.backgroundColor='#f8fafc'" 
+                     onmouseout="this.style.borderColor='var(--border-light)'; this.style.backgroundColor='transparent'">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-weight:600; font-size: 0.95rem;">Period ${cls.period}: ${cls.subject}</div>
+                            ${isCounselling ? '<div style="font-size:0.875rem; color:var(--text-muted);">Counselling</div>' : `<div style="font-size:0.875rem; color:var(--text-muted);">${cls.section} &bull; Year ${cls.year}</div>`}
+                        </div>
+                        <i class="fas fa-chevron-right" style="color:var(--primary-accent); font-size: 0.875rem;"></i>
+                    </div>
+                </div>
+            `;}).join('');
+            document.getElementById('leaveModal').classList.add('active');
+        }
+
+        function closeLeaveModal() { document.getElementById('leaveModal').classList.remove('active'); }
+
+        async function showAvailableFaculty(period, subject, section, year) {
+            closeLeaveModal();
+            const container = document.getElementById('available-faculty-list');
+            const dayIndex = new Date().getDay() - 1; // Mon=0
+            if (dayIndex < 0 || dayIndex > 4) {
+                showToast("No substitutions available on weekends", "warning");
+                return;
+            }
+            const dayName = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'][dayIndex];
+            const cellId = `cell-${dayIndex}-${period}`;
+
+            const allFaculties = await db.getAllFaculties();
+            const allNotifs = await db.getAllNotifications();
+            
+            const available = (allFaculties || []).filter(f =>
+                f.id !== profileData.id &&
+                f.dept === profileData.dept &&
+                !f.timetable[cellId]
+            );
+
+            if (available.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding: 2rem;">No department faculty are free during this period.</p>';
+            } else {
+                container.innerHTML = available.map(f => {
+                    const alreadySent = (allNotifs || []).some(n => 
+                        n.from === profileData.id && 
+                        n.to === f.id && 
+                        n.type === 'request' && 
+                        n.data && n.data.cellId === cellId &&
+                        n.status !== 'rejected'
+                    );
+
+                    return `
+                    <div id="faculty-item-${f.id}" 
+                         onclick="${alreadySent ? '' : `sendTakeoverRequest(this, '${f.id}', ${period}, '${subject}', '${dayName}', '${section}', '${year}')`}"
+                         style="display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid var(--border-light); border-radius: var(--radius-md); cursor: ${alreadySent ? 'default' : 'pointer'}; transition: all 0.15s; opacity: ${alreadySent ? '0.7' : '1'}; background: ${alreadySent ? '#f8fafc' : 'white'}; margin-bottom: 0.5rem;">
+                        <div class="user-initials" style="width: 32px; height: 32px; font-size: 0.75rem;">${f.name.split(' ').map(n => n[0]).join('')}</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight:600; font-size: 0.875rem;">${f.name}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">${f.desig}</div>
+                        </div>
+                        <div class="request-status" style="font-size: 0.75rem; font-weight: 600; color: ${alreadySent ? 'var(--success)' : 'var(--primary-accent)'};">
+                            ${alreadySent ? '<i class="fas fa-check"></i> Sent' : '<i class="fas fa-paper-plane"></i> Request'}
+                        </div>
+                    </div>
+                `;}).join('');
+            }
+
+            document.getElementById('facultySelectModal').classList.add('active');
+        }
+
+        function closeFacultySelectModal() {
+            document.getElementById('facultySelectModal').classList.remove('active');
+            document.getElementById('leaveModal').classList.add('active');
+        }
+
+        async function sendTakeoverRequest(el, targetId, period, subject, day, section, year) {
+            // Prevent multiple clicks
+            el.style.pointerEvents = 'none';
+            const statusLabel = el.querySelector('.request-status');
+            const originalContent = statusLabel.innerHTML;
+            statusLabel.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+            try {
+                const dayIndex = new Date().getDay() - 1;
+                if (dayIndex < 0 || dayIndex > 4) return;
+                const cellId = `cell-${dayIndex}-${period}`;
+                await db.sendNotification(targetId, profileData.id, 'request', {
+                    cellId: cellId,
+                    subject: subject,
+                    section: section,
+                    year: year,
+                    day: day,
+                    period: period
+                });
+
+                el.style.opacity = '0.7';
+                el.style.background = '#f8fafc';
+                el.onclick = null; // Disable further clicks
+                statusLabel.innerHTML = '<i class="fas fa-check"></i> Sent';
+                statusLabel.style.color = 'var(--success)';
+                showToast(`Request sent successfully`, "success");
+            } catch (err) {
+                console.error(err);
+                statusLabel.innerHTML = originalContent;
+                el.style.pointerEvents = 'auto';
+                showToast("Failed to send request. Please try again.", "error");
+            }
+        }
+
+        // SEARCH LOGIC
+        const searchInput = document.querySelector('.command-search');
+        const resultsDropdown = document.createElement('div');
+        resultsDropdown.className = 'search-results-dropdown';
+        document.querySelector('.navbar-center').appendChild(resultsDropdown);
+
+        searchInput.addEventListener('input', async (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            if (query.length < 2) {
+                resultsDropdown.classList.remove('active');
+                return;
+            }
+
+            const allFaculties = await db.getAllFaculties();
+            const matchingFaculties = (allFaculties || []).filter(f =>
+                f.name.toLowerCase().includes(query)
+            );
+
+            let html = '';
+
+            const actions = [
+                { name: 'Request Leave', icon: 'fa-plus', action: openLeaveModal },
+                { name: 'View Timetable', icon: 'fa-calendar-alt', action: () => location.href = 'details.html' },
+                { name: 'Faculty Profile', icon: 'fa-address-book', action: () => location.href = 'directory.html' }
+            ].filter(a => a.name.toLowerCase().includes(query));
+
+            if (actions.length > 0) {
+                html += '<div class="search-section-header">Actions</div>';
+                actions.forEach(a => {
+                    html += `
+                        <div class="search-result-item" onclick="(${a.action.toString()})()">
+                            <div class="result-icon"><i class="fas ${a.icon}"></i></div>
+                            <div class="result-info">
+                                <span class="result-title">${a.name}</span>
+                                <span class="result-subtitle">System Action</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (matchingFaculties.length > 0) {
+                html += '<div class="search-section-header">Profiles</div>';
+                matchingFaculties.forEach(f => {
+                    html += `
+                        <div class="search-result-item" onclick="location.href='directory.html?search=${encodeURIComponent(f.name)}'">
+                            <div class="result-icon"><i class="fas fa-user"></i></div>
+                            <div class="result-info">
+                                <span class="result-title">${f.name}</span>
+                                <span class="result-subtitle">${f.dept} &bull; ${f.desig}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            if (html === '') {
+                html = '<div style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.8125rem;">No matches found.</div>';
+            }
+
+            resultsDropdown.innerHTML = html;
+            resultsDropdown.classList.add('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !resultsDropdown.contains(e.target)) {
+                resultsDropdown.classList.remove('active');
+            }
+        });
+
+        // Ctrl + K to focus search handled in common.js
+    </script>
+</body>
+
+</html>
